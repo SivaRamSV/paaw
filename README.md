@@ -1,6 +1,6 @@
 # PAAW
 
-**Personal AI Assistant** — An AI that builds a mental model of YOU.
+**Personal AI Assistant that Works** — A structured, user-driven AI assistant with graph-based memory.
 
 ```
  ██████╗  █████╗  █████╗ ██╗    ██╗
@@ -13,9 +13,21 @@
 
 **Website**: [paaw.online](https://paaw.online)
 
-## The Mental Model — PAAW's Core
+## Why PAAW?
 
-AI assistants use different strategies for memory — chat logs, vector search, summaries. PAAW takes a **graph-based approach**: it builds a structured knowledge graph about you that grows with every conversation.
+LLMs are probabilistic systems. When you give an autonomous agent a vague goal and let it figure things out in a sandbox, you get unpredictable behavior and runaway token costs. A simple "monitor my investments" task can spiral into dozens of API calls, hallucinated actions, and surprising results.
+
+PAAW takes a different approach: **you define the patterns, PAAW executes them.**
+
+- **Skills** describe *how* to do something (in plain English)
+- **Jobs** describe *what* to do, *when* to run, and *where* to notify
+- **Tools** are the capabilities PAAW can use (web search, Discord, any MCP server)
+
+By narrowing the probability space with specific definitions, you get predictable, repeatable automation — without the token burn. This isn't an "ask it anything and hope for the best" agent. This is structured automation with an LLM brain.
+
+## The Mental Model — Graph-Based Memory
+
+AI assistants use different strategies for memory — chat logs, vector search, summaries. PAAW uses a **knowledge graph** (Apache AGE on PostgreSQL) that structures everything it learns about you into entities, relationships, and facts.
 
 ```
 [You]
@@ -35,7 +47,14 @@ Key Facts:
   Tracks Berkshire Hathaway stock / Likes concise, bullet-point summaries
 ```
 
-**Every conversation enriches your mental model.** PAAW extracts entities, relationships, and facts — building context that persists forever.
+Every conversation enriches the graph. PAAW extracts entities, relationships, and key facts automatically — building a persistent model of your world that grows richer over time.
+
+**What this means in practice:**
+
+- **Total recall.** Every conversation from any day is retrievable. PAAW can pull up what you discussed three weeks ago about a project, a person, or a decision — without you having to remember when you said it.
+- **Intelligent context retrieval.** When you mention a person, project, or goal, PAAW retrieves everything it knows — related entities, history, key facts — and weaves it into the conversation. You're never starting from scratch.
+- **Cross-channel continuity.** Whether you chat via Web UI, CLI, or Discord from your phone — PAAW picks up exactly where you left off. Same context, same memory, regardless of channel.
+- **Compounding knowledge.** The more you use PAAW, the more it understands. Connections between entities surface naturally. A mention of your colleague pulls in their role, shared projects, and last interaction.
 
 | Dark Mode | Light Mode |
 |-----------|------------|
@@ -44,9 +63,10 @@ Key Facts:
 ## Features
 
 - **Mental Model** — Knowledge graph that grows with every conversation
-- **Tool Integration** — Web search, Discord, and more via MCP
-- **Scheduled Jobs** — Background tasks that run on schedule  
-- **Privacy First** — Self-hosted, all data stays on YOUR machine
+- **User-Defined Skills & Jobs** — You define the patterns in plain English, PAAW executes
+- **Tool Integration** — Web search, Discord, and any MCP-compatible server
+- **Scheduled Automation** — Time-triggered jobs for monitoring, reporting, alerting
+- **Self-Hosted** — Your knowledge graph and data stay on your machine
 - **Multi-Channel** — Web UI, CLI, Discord (coming: Telegram, Slack)
 
 ## Quick Start (Docker)
@@ -129,24 +149,27 @@ paaw jobs list
 
 ### Jobs
 
-Jobs are defined in `jobs/*/job.md`. Example:
+Jobs are defined in `jobs/*/job.md`. They describe a repeatable task with a schedule:
 
 ```markdown
-# Morning News Briefing
+# SEC Filing Monitor
 
 ## Uses Skill
 web_researcher
 
 ## Goal
-Find top tech and AI news of the day.
+Check for new SEC 10-K and 8-K filings from Berkshire Hathaway (BRK.B).
+Summarize any material changes in holdings or significant events.
 
 ## Schedule
-cron: 0 8 * * *
+cron: 0 9 * * 1-5
 timezone: Asia/Kolkata
 
 ## How To Notify
 Send to Discord channel ID: 1234567890
 ```
+
+Other examples: monitoring infrastructure logs for specific error patterns, tracking competitor product launches, aggregating daily news for a specific industry.
 
 ### Skills
 
