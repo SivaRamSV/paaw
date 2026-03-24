@@ -18,30 +18,21 @@
 AI assistants use different strategies for memory — chat logs, vector search, summaries. PAAW takes a **graph-based approach**: it builds a structured knowledge graph about you that grows with every conversation.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    YOUR MENTAL MODEL                            │
-│                                                                 │
-│    [You] ──works_at──▶ [Company]                               │
-│      │                     │                                    │
-│      │                  located_in                              │
-│      │                     ▼                                    │
-│      │              [San Francisco]                             │
-│      │                                                          │
-│   interested_in           manages                               │
-│      │                       │                                  │
-│      ▼                       ▼                                  │
-│   [AI/ML] ◀──related_to── [Project Alpha]                      │
-│                              │                                  │
-│                         deadline                                │
-│                              ▼                                  │
-│                        [March 30]                               │
-│                                                                 │
-│   Key Facts:                                                    │
-│   • Prefers morning briefings at 8 AM                          │
-│   • Wife's birthday is April 15                                 │
-│   • Tracks Berkshire Hathaway stock                            │
-│   • Likes concise, bullet-point summaries                      │
-└─────────────────────────────────────────────────────────────────┘
+[You]
+  |-- works_at ---------> [Company]
+  |                            |-- located_in --> [San Francisco]
+  |
+  |-- interested_in ----> [AI/ML]
+  |
+  |-- manages ----------> [Project Alpha]
+  |                            |-- deadline ----> [March 30]
+  |
+  +-- married_to -------> [Sarah]
+                               |-- birthday ---> [April 15]
+
+Key Facts:
+  Prefers morning briefings at 8 AM / Wife's birthday is April 15
+  Tracks Berkshire Hathaway stock / Likes concise, bullet-point summaries
 ```
 
 **Every conversation enriches your mental model.** PAAW extracts entities, relationships, and facts — building context that persists forever.

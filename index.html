@@ -160,7 +160,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin: 40px auto;
+            margin: 0 auto 32px;
             white-space: pre;
         }
         
@@ -353,8 +353,16 @@
     <main>
         <section class="hero">
             <div class="container">
+                <pre class="ascii-art">
+ ██████╗  █████╗  █████╗ ██╗    ██╗
+ ██╔══██╗██╔══██╗██╔══██╗██║    ██║
+ ██████╔╝███████║███████║██║ █╗ ██║
+ ██╔═══╝ ██╔══██║██╔══██║██║███╗██║
+ ██║     ██║  ██║██║  ██║╚███╔███╔╝
+ ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝
+                </pre>
                 <span class="hero-badge">Open Source · Self-Hosted · Graph Memory</span>
-                <h1>Your AI.<br>Your Memory.<br>Your Machine.</h1>
+                <h1>An AI That Actually<br>Knows You</h1>
                 <p>PAAW uses a <strong style="color: var(--accent);">knowledge graph</strong> to remember your work, relationships, preferences, and goals — structured context that grows richer with every conversation.</p>
                 <div class="hero-buttons">
                     <a href="https://github.com/SivaRamSV/paaw" class="btn btn-primary">
@@ -365,14 +373,6 @@
                         Learn More
                     </a>
                 </div>
-                <pre class="ascii-art">
- ██████╗  █████╗  █████╗ ██╗    ██╗
- ██╔══██╗██╔══██╗██╔══██╗██║    ██║
- ██████╔╝███████║███████║██║ █╗ ██║
- ██╔═══╝ ██╔══██║██╔══██║██║███╗██║
- ██║     ██║  ██║██║  ██║╚███╔███╔╝
- ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝
-                </pre>
             </div>
         </section>
 
@@ -446,32 +446,20 @@
                 <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 800px; margin: 0 auto;">
                     <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.875rem;">Example: After a few conversations, PAAW knows...</p>
                     <pre style="font-family: monospace; font-size: 0.8rem; color: var(--accent); line-height: 1.6; overflow-x: auto;">
-┌─────────────────────────────────────────────────────────────┐
-│                    YOUR KNOWLEDGE GRAPH                     │
-│                                                             │
-│    [You] ─────works_at─────▶ [Acme Corp]                   │
-│      │                           │                          │
-│      │                      located_in                      │
-│      │                           ▼                          │
-│      │                    [San Francisco]                   │
-│      │                                                      │
-│      ├───interested_in───▶ [AI/ML]                         │
-│      │                                                      │
-│      ├───manages─────────▶ [Project Alpha]                 │
-│      │                           │                          │
-│      │                       deadline                       │
-│      │                           ▼                          │
-│      │                     [March 30]                       │
-│      │                                                      │
-│      └───married_to──────▶ [Sarah]                         │
-│                               │                             │
-│                           birthday                          │
-│                               ▼                             │
-│                          [April 15]                         │
-│                                                             │
-│   Key Facts: Prefers bullet points • Morning person         │
-│              Tracks BRK.B • Learning Spanish                │
-└─────────────────────────────────────────────────────────────┘</pre>
+  [You]
+    |-- works_at ---------> [Acme Corp]
+    |                            |-- located_in --> [San Francisco]
+    |
+    |-- interested_in ----> [AI/ML]
+    |
+    |-- manages ----------> [Project Alpha]
+    |                            |-- deadline ----> [March 30]
+    |
+    +-- married_to -------> [Sarah]
+                                 |-- birthday ---> [April 15]
+
+  Key Facts:
+    Prefers bullet points / Morning person / Tracks BRK.B / Learning Spanish</pre>
                 </div>
             </div>
         </section>
