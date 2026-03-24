@@ -339,6 +339,7 @@
                 <a href="/" class="logo">🐾 PAAW</a>
                 <ul class="nav-links">
                     <li><a href="#features">Features</a></li>
+                    <li><a href="#mental-model">Mental Model</a></li>
                     <li><a href="#how-it-works">How it Works</a></li>
                     <li><a href="https://github.com/SivaRamSV/paaw">GitHub</a></li>
                 </ul>
@@ -352,9 +353,9 @@
     <main>
         <section class="hero">
             <div class="container">
-                <span class="hero-badge">🚀 Open Source & Self-Hosted</span>
-                <h1>Your Personal AI<br>That Actually Works</h1>
-                <p>PAAW is a privacy-first AI assistant with persistent memory. It remembers you, learns from conversations, and runs scheduled tasks — all on your own machine.</p>
+                <span class="hero-badge">Open Source · Self-Hosted · Graph Memory</span>
+                <h1>Your AI.<br>Your Memory.<br>Your Machine.</h1>
+                <p>PAAW uses a <strong style="color: var(--accent);">knowledge graph</strong> to remember your work, relationships, preferences, and goals — structured context that grows richer with every conversation.</p>
                 <div class="hero-buttons">
                     <a href="https://github.com/SivaRamSV/paaw" class="btn btn-primary">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
@@ -379,36 +380,98 @@
             <div class="container">
                 <h2>Why PAAW?</h2>
                 <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">🧠</div>
-                        <h3>Mental Model</h3>
-                        <p>PAAW builds a knowledge graph about you — your work, preferences, relationships, and goals. Context that persists across conversations.</p>
+                    <div class="feature-card" style="grid-column: span 2; background: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, transparent 50%);">
+                        <div class="feature-icon" style="font-size: 1.5rem; font-family: monospace; color: var(--accent);">[◉]→[◉]→[◉]</div>
+                        <h3>Mental Model — Graph-Based Memory</h3>
+                        <p>PAAW uses a <strong>knowledge graph</strong> approach to memory. Every conversation extracts <strong>entities</strong>, <strong>relationships</strong>, and <strong>key facts</strong> — your projects, your people, your deadlines, your preferences — all stored in a graph database that grows richer over time.</p>
+                        <div style="margin-top: 16px; font-family: monospace; font-size: 0.8rem; color: var(--accent); background: var(--bg); padding: 12px; border-radius: 8px; overflow-x: auto;">
+[You] ──works_at──▶ [Company] ──located_in──▶ [City]<br>
+  │<br>
+  └──interested_in──▶ [AI/ML] ◀──related_to── [Project]
+                        </div>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon">🔒</div>
+                        <div class="feature-icon" style="font-size: 1.5rem; font-family: monospace; color: var(--accent);">[ ● ]</div>
                         <h3>Privacy First</h3>
                         <p>Self-hosted. Your data never leaves your machine. Use any LLM provider — Claude, GPT, or local models via Ollama.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon">⏰</div>
+                        <div class="feature-icon" style="font-size: 1.5rem; font-family: monospace; color: var(--accent);">cron</div>
                         <h3>Scheduled Jobs</h3>
                         <p>Set up automated tasks that run on schedule — morning news briefings, investment monitoring, birthday reminders, and more.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon">🔧</div>
+                        <div class="feature-icon" style="font-size: 1.5rem; font-family: monospace; color: var(--accent);">MCP</div>
                         <h3>Tool Integration</h3>
                         <p>Connect to web search, Discord, and any MCP-compatible tool. PAAW can search the web, send messages, and take actions.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon">💬</div>
+                        <div class="feature-icon" style="font-size: 1.5rem; font-family: monospace; color: var(--accent);">~/></div>
                         <h3>Multi-Channel</h3>
                         <p>Chat via Web UI, CLI, or Discord. Talk to PAAW from your phone while commuting. Same context everywhere.</p>
                     </div>
                     <div class="feature-card">
-                        <div class="feature-icon">🎯</div>
+                        <div class="feature-icon" style="font-size: 1.5rem; font-family: monospace; color: var(--accent);">→ ✓</div>
                         <h3>Goal Oriented</h3>
                         <p>PAAW doesn't just answer questions — it helps you track goals, remember commitments, and stay on top of what matters.</p>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mental Model Deep Dive -->
+        <section class="mental-model" id="mental-model" style="padding: 80px 0; background: linear-gradient(180deg, var(--bg) 0%, var(--bg-tertiary) 100%);">
+            <div class="container">
+                <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 24px;">How the Mental Model Works</h2>
+                <p style="text-align: center; color: var(--text-muted); max-width: 700px; margin: 0 auto 48px;">Every conversation teaches PAAW something new about you. It extracts three things:</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 48px;">
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; padding: 24px;">
+                        <div style="font-size: 1.2rem; margin-bottom: 12px; font-family: monospace; color: var(--accent);">[node]</div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 8px; color: var(--accent);">Entities</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">People, companies, projects, places, dates — anything important mentioned in your conversations.</p>
+                    </div>
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; padding: 24px;">
+                        <div style="font-size: 1.2rem; margin-bottom: 12px; font-family: monospace; color: var(--accent);">──▶</div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 8px; color: var(--accent);">Relationships</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">How things connect — you work at X, your wife's name is Y, project Z is due on date W.</p>
+                    </div>
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; padding: 24px;">
+                        <div style="font-size: 1.2rem; margin-bottom: 12px; font-family: monospace; color: var(--accent);">{ k:v }</div>
+                        <h3 style="font-size: 1.1rem; margin-bottom: 8px; color: var(--accent);">Key Facts</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Preferences, habits, important details — you prefer bullet points, you track crypto, you're learning Spanish.</p>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 800px; margin: 0 auto;">
+                    <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.875rem;">Example: After a few conversations, PAAW knows...</p>
+                    <pre style="font-family: monospace; font-size: 0.8rem; color: var(--accent); line-height: 1.6; overflow-x: auto;">
+┌─────────────────────────────────────────────────────────────┐
+│                    YOUR KNOWLEDGE GRAPH                     │
+│                                                             │
+│    [You] ─────works_at─────▶ [Acme Corp]                   │
+│      │                           │                          │
+│      │                      located_in                      │
+│      │                           ▼                          │
+│      │                    [San Francisco]                   │
+│      │                                                      │
+│      ├───interested_in───▶ [AI/ML]                         │
+│      │                                                      │
+│      ├───manages─────────▶ [Project Alpha]                 │
+│      │                           │                          │
+│      │                       deadline                       │
+│      │                           ▼                          │
+│      │                     [March 30]                       │
+│      │                                                      │
+│      └───married_to──────▶ [Sarah]                         │
+│                               │                             │
+│                           birthday                          │
+│                               ▼                             │
+│                          [April 15]                         │
+│                                                             │
+│   Key Facts: Prefers bullet points • Morning person         │
+│              Tracks BRK.B • Learning Spanish                │
+└─────────────────────────────────────────────────────────────┘</pre>
                 </div>
             </div>
         </section>
@@ -473,7 +536,7 @@ http://localhost:8080
                 <a href="https://www.linkedin.com/in/sivaramsv/">LinkedIn</a>
                 <a href="mailto:sivaramshibu@live.com">Contact</a>
             </div>
-            <p>Made with 🐾 by <a href="https://github.com/SivaRamSV">SivaRamSV</a></p>
+            <p>Built by <a href="https://github.com/SivaRamSV">SivaRamSV</a></p>
             <p style="margin-top: 8px; font-size: 0.875rem;">Questions? <a href="mailto:sivaramshibu@live.com" style="color: var(--accent);">sivaramshibu@live.com</a></p>
         </div>
     </footer>
