@@ -1,0 +1,689 @@
+<!-- Home Page: Clean Mental Model Graph + Chat -->
+<div class="max-w-7xl mx-auto p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-8rem)]">
+        
+        <!-- Left: Knowledge Graph -->
+        <div class="rounded-2xl flex flex-col overflow-hidden shadow-lg" 
+             :class="darkMode ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-zinc-200'">
+            
+            <!-- Header -->
+            <div class="p-4 border-b flex justify-between items-center" 
+                 :class="darkMode ? 'border-zinc-800' : 'border-zinc-200'">
+                <div>
+                    <h2 class="text-sm font-semibold flex items-center gap-2" 
+                        :class="darkMode ? 'text-zinc-100' : 'text-zinc-800'">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        Mental Model
+                    </h2>
+                    <p class="text-xs mt-0.5" 
+                       :class="darkMode ? 'text-zinc-500' : 'text-zinc-400'"
+                       hx-get="/htmx/graph/stats"
+                       hx-trigger="load, every 30s"
+                       hx-swap="innerHTML">
+                        Loading...
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="text" 
+                           id="graph-search"
+                           placeholder="Search..." 
+                           class="px-3 py-1.5 rounded-lg text-xs w-28 transition-all focus:w-36 focus:outline-none"
+                           :class="darkMode ? 'bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-500 focus:border-amber-500/50' : 'bg-zinc-100 border border-zinc-200 text-zinc-700 placeholder-zinc-400 focus:border-amber-400'"
+                           oninput="window.graphManager?.search(this.value)"/>
+                    <button onclick="window.graphManager?.refresh()" 
+                            class="p-1.5 rounded-lg transition-all"
+                            :class="darkMode ? 'text-zinc-500 hover:text-amber-400 hover:bg-zinc-800' : 'text-zinc-400 hover:text-amber-600 hover:bg-zinc-100'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Graph Container -->
+            <div id="graph-container" class="flex-1 relative min-h-[300px]"
+                 :class="darkMode ? 'bg-zinc-950' : 'bg-zinc-50'">
+                <svg id="graph-svg" class="w-full h-full">
+                    <defs>
+                        <!-- Animated pulse marker -->
+                        <marker id="pulse-marker" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4">
+                            <circle cx="5" cy="5" r="3" fill="#f59e0b" opacity="0.8"/>
+                        </marker>
+                        <!-- Glow filter for pulses -->
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                </svg>
+                
+                <!-- Loading -->
+                <div id="graph-loading" class="absolute inset-0 flex items-center justify-center"
+                     :class="darkMode ? 'bg-zinc-950' : 'bg-zinc-50'">
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="w-6 h-6 border-2 border-t-amber-500 rounded-full animate-spin"
+                             :class="darkMode ? 'border-zinc-700' : 'border-zinc-300'"></div>
+                        <span class="text-xs" :class="darkMode ? 'text-zinc-500' : 'text-zinc-400'">Loading graph...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="p-3 border-t flex flex-wrap gap-2" 
+                 :class="darkMode ? 'border-zinc-800' : 'border-zinc-200'">
+                <button onclick="window.graphManager?.filter('all')" data-filter="all"
+                        class="filter-btn active px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500 text-white transition-all">
+                    All
+                </button>
+                <button onclick="window.graphManager?.filter('User')" data-filter="User"
+                        class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                        :class="darkMode ? 'bg-zinc-800 text-zinc-400 hover:bg-amber-500/20 hover:text-amber-400' : 'bg-zinc-200 text-zinc-600 hover:bg-amber-100 hover:text-amber-700'">
+                    Core
+                </button>
+                <button onclick="window.graphManager?.filter('Memory')" data-filter="Memory"
+                        class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                        :class="darkMode ? 'bg-zinc-800 text-zinc-400 hover:bg-purple-500/20 hover:text-purple-400' : 'bg-zinc-200 text-zinc-600 hover:bg-purple-100 hover:text-purple-700'">
+                    Memory
+                </button>
+                <button onclick="window.graphManager?.filter('Conversation')" data-filter="Conversation"
+                        class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                        :class="darkMode ? 'bg-zinc-800 text-zinc-400 hover:bg-rose-500/20 hover:text-rose-400' : 'bg-zinc-200 text-zinc-600 hover:bg-rose-100 hover:text-rose-700'">
+                    Chats
+                </button>
+                <button onclick="window.graphManager?.filter('Message')" data-filter="Message"
+                        class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                        :class="darkMode ? 'bg-zinc-800 text-zinc-400 hover:bg-pink-500/20 hover:text-pink-400' : 'bg-zinc-200 text-zinc-600 hover:bg-pink-100 hover:text-pink-700'">
+                    Messages
+                </button>
+            </div>
+            
+            <!-- Node Details Panel -->
+            <div id="node-details" class="p-4 border-t hidden" 
+                 :class="darkMode ? 'border-zinc-800 bg-zinc-900/80' : 'border-zinc-200 bg-white'">
+            </div>
+        </div>
+        
+        <!-- Right: Chat -->
+        <div class="rounded-2xl flex flex-col overflow-hidden shadow-lg" 
+             :class="darkMode ? 'bg-zinc-900 border border-zinc-800' : 'bg-white border border-zinc-200'">
+            
+            <!-- Header -->
+            <div class="p-4 border-b flex justify-between items-center" 
+                 :class="darkMode ? 'border-zinc-800' : 'border-zinc-200'">
+                <div>
+                    <h2 class="text-sm font-semibold flex items-center gap-2" 
+                        :class="darkMode ? 'text-zinc-100' : 'text-zinc-800'">
+                        <span>🐾</span> PAAW
+                    </h2>
+                    <p class="text-xs mt-0.5" :class="darkMode ? 'text-zinc-500' : 'text-zinc-400'">
+                        Your AI assistant
+                    </p>
+                </div>
+                <button class="text-xs px-2 py-1 rounded transition-all"
+                        :class="darkMode ? 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800' : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100'"
+                        hx-post="/htmx/chat/clear"
+                        hx-target="#chat-messages"
+                        hx-swap="innerHTML">
+                    Clear
+                </button>
+            </div>
+            
+            <!-- Messages -->
+            <div id="chat-messages" 
+                 class="flex-1 overflow-y-auto p-4 space-y-4"
+                 :class="darkMode ? 'bg-zinc-950' : 'bg-zinc-50'"
+                 hx-get="/htmx/chat/history"
+                 hx-trigger="load"
+                 hx-swap="innerHTML">
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="hidden px-4 py-2 border-t" 
+                 :class="darkMode ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-white'">
+                <div class="flex items-center gap-2 text-xs" :class="darkMode ? 'text-zinc-500' : 'text-zinc-400'">
+                    <span class="flex gap-0.5">
+                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style="animation-delay: 0s"></span>
+                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                    </span>
+                    <span>Thinking...</span>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <form hx-post="/htmx/chat/send"
+                  hx-target="#chat-messages"
+                  hx-swap="beforeend"
+                  hx-on::before-request="handleChatSubmit(this)"
+                  hx-on::after-request="handleChatResponse()"
+                  class="p-4 border-t" 
+                  :class="darkMode ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-white'">
+                <div class="flex gap-2">
+                    <input type="text" 
+                           name="message"
+                           id="chat-input"
+                           autocomplete="off"
+                           class="flex-1 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 transition-all"
+                           :class="darkMode ? 'bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder-zinc-500 focus:ring-amber-500/30 focus:border-zinc-600' : 'bg-zinc-100 border border-zinc-200 text-zinc-800 placeholder-zinc-400 focus:ring-amber-500/30 focus:border-zinc-300'"
+                           placeholder="Ask anything..."/>
+                    <button type="submit"
+                            class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-all text-sm">
+                        Send
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chat handlers
+function handleChatSubmit(form) {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+    
+    const chatMessages = document.getElementById('chat-messages');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    // User message with avatar
+    chatMessages.insertAdjacentHTML('beforeend', `
+        <div class="flex justify-end mb-4">
+            <div class="flex gap-3 max-w-[85%] flex-row-reverse">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-800 dark:from-zinc-400 dark:to-zinc-600 flex items-center justify-center flex-shrink-0 text-white dark:text-zinc-900 text-sm font-bold shadow-md">
+                    U
+                </div>
+                <div class="px-4 py-2.5 rounded-2xl rounded-tr-sm text-sm bg-amber-100 dark:bg-amber-500/20 text-zinc-800 dark:text-zinc-100">
+                    ${escapeHtml(message)}
+                    <div class="text-[10px] mt-1 text-right text-zinc-400 dark:text-zinc-500">${time}</div>
+                </div>
+            </div>
+        </div>
+    `);
+    
+    document.getElementById('typing-indicator').classList.remove('hidden');
+    setTimeout(() => { input.value = ''; }, 10);
+    scrollChatToBottom();
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function handleChatResponse() {
+    document.getElementById('typing-indicator').classList.add('hidden');
+    
+    // Find new assistant messages and stream them with typewriter effect
+    document.querySelectorAll('.markdown-content').forEach(el => {
+        const markdown = el.dataset.markdown;
+        if (markdown && el.querySelector('.loading-dots')) {
+            // Decode HTML entities
+            const decoded = markdown.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"');
+            
+            // Clear loading dots and start streaming
+            el.innerHTML = '<span class="streaming-cursor"></span>';
+            streamText(el, decoded);
+        }
+    });
+    
+    if (window.graphManager) setTimeout(() => window.graphManager.refresh(), 500);
+}
+
+// Typewriter streaming effect
+function streamText(container, text) {
+    let index = 0;
+    const chunkSize = 3; // Characters per tick for speed
+    const delay = 15; // ms between chunks
+    
+    // Create a temporary container for accumulating text
+    let accumulated = '';
+    
+    const stream = () => {
+        if (index < text.length) {
+            // Add next chunk of characters
+            const chunk = text.substring(index, Math.min(index + chunkSize, text.length));
+            accumulated += chunk;
+            index += chunkSize;
+            
+            // Render markdown progressively (every few chunks for performance)
+            if (index % 30 === 0 || index >= text.length) {
+                container.innerHTML = renderMarkdown(accumulated) + '<span class="streaming-cursor animate-pulse">▊</span>';
+            } else {
+                // Just append text for intermediate updates
+                const cursor = container.querySelector('.streaming-cursor');
+                if (cursor) {
+                    cursor.insertAdjacentText('beforebegin', chunk);
+                }
+            }
+            
+            scrollChatToBottom();
+            setTimeout(stream, delay);
+        } else {
+            // Finished streaming - render final markdown without cursor
+            container.innerHTML = renderMarkdown(accumulated);
+            scrollChatToBottom();
+        }
+    };
+    
+    stream();
+}
+
+// Simple markdown renderer for chat
+function renderMarkdown(text) {
+    // Configure marked for chat-style rendering
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: false,
+            mangle: false
+        });
+        
+        let html = marked.parse(text);
+        
+        // Add styling classes to elements
+        html = html.replace(/<pre>/g, '<pre class="bg-zinc-200 dark:bg-zinc-900 rounded-lg p-3 my-2 overflow-x-auto text-xs">');
+        html = html.replace(/<code>/g, '<code class="bg-zinc-200 dark:bg-zinc-900 px-1.5 py-0.5 rounded text-amber-600 dark:text-amber-400 text-xs">');
+        html = html.replace(/<pre class="[^"]*"><code class="[^"]*">/g, '<pre class="bg-zinc-200 dark:bg-zinc-900 rounded-lg p-3 my-2 overflow-x-auto text-xs"><code class="text-zinc-800 dark:text-zinc-200">');
+        html = html.replace(/<ul>/g, '<ul class="list-disc list-inside my-2 space-y-1">');
+        html = html.replace(/<ol>/g, '<ol class="list-decimal list-inside my-2 space-y-1">');
+        html = html.replace(/<li>/g, '<li class="text-sm">');
+        html = html.replace(/<p>/g, '<p class="mb-2 last:mb-0">');
+        html = html.replace(/<h([1-6])>/g, '<h$1 class="font-semibold mt-3 mb-1">');
+        html = html.replace(/<blockquote>/g, '<blockquote class="border-l-4 border-amber-500 pl-3 my-2 italic text-zinc-600 dark:text-zinc-400">');
+        html = html.replace(/<a /g, '<a class="text-amber-600 dark:text-amber-400 underline hover:no-underline" ');
+        html = html.replace(/<strong>/g, '<strong class="font-semibold">');
+        html = html.replace(/<table>/g, '<table class="border-collapse my-2 text-sm w-full">');
+        html = html.replace(/<th>/g, '<th class="border border-zinc-300 dark:border-zinc-600 px-2 py-1 bg-zinc-100 dark:bg-zinc-800">');
+        html = html.replace(/<td>/g, '<td class="border border-zinc-300 dark:border-zinc-600 px-2 py-1">');
+        
+        return html;
+    }
+    
+    // Fallback if marked is not loaded
+    return text.replace(/\n/g, '<br>');
+}
+
+function scrollChatToBottom() {
+    const chat = document.getElementById('chat-messages');
+    if (chat) setTimeout(() => { chat.scrollTop = chat.scrollHeight; }, 100);
+}
+</script>
+
+<!-- Clean SVG Graph with D3 -->
+<script>
+class GraphManager {
+    constructor() {
+        this.container = document.getElementById('graph-container');
+        this.svg = d3.select('#graph-svg');
+        this.nodes = [];
+        this.links = [];
+        this.simulation = null;
+        this.activeFilter = 'all';
+        this.searchTerm = '';
+        this.isDark = document.documentElement.classList.contains('dark') || localStorage.getItem('darkMode') !== 'false';
+        
+        // Simple flat colors - using amber for User to match PAAW branding
+        this.colors = {
+            'User': '#f59e0b',
+            'Assistant': '#8b5cf6',
+            'Memory': '#a855f7',
+            'Skill': '#f59e0b',
+            'Job': '#3b82f6',
+            'Domain': '#ef4444',
+            'Project': '#f97316',
+            'Conversation': '#f43f5e',
+            'Message': '#ec4899',
+            'MCP_Server': '#14b8a6',
+            'mcp_server': '#14b8a6',
+            'default': '#6b7280'
+        };
+        
+        this.sizes = {
+            'User': 18, 'Assistant': 15, 'Conversation': 12, 'Domain': 11, 'Project': 11,
+            'Skill': 10, 'Job': 10, 'MCP_Server': 9, 'mcp_server': 9,
+            'Memory': 6, 'Message': 5, 'default': 7
+        };
+        
+        // Listen for theme changes
+        this.observeTheme();
+        
+        this.init();
+    }
+    
+    observeTheme() {
+        // Watch for dark class changes on document
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    const newDarkMode = document.documentElement.classList.contains('dark');
+                    if (newDarkMode !== this.isDark) {
+                        this.isDark = newDarkMode;
+                        this.render();
+                    }
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
+    
+    async init() {
+        try {
+            await this.loadData();
+            this.render();
+            this.hideLoading();
+        } catch (e) {
+            console.error('Graph init failed:', e);
+        }
+    }
+    
+    async loadData() {
+        const response = await fetch('/api/graph');
+        const data = await response.json();
+        this.rawNodes = data.nodes || [];
+        this.rawLinks = data.edges || [];
+    }
+    
+    getVisibleNodes() {
+        let nodes = [...this.rawNodes];
+        if (this.activeFilter !== 'all') {
+            nodes = nodes.filter(n => n.type === this.activeFilter);
+        }
+        if (this.searchTerm) {
+            const term = this.searchTerm.toLowerCase();
+            nodes = nodes.filter(n => 
+                n.label?.toLowerCase().includes(term) || 
+                n.id?.toLowerCase().includes(term)
+            );
+        }
+        return nodes;
+    }
+    
+    getVisibleLinks(nodeIds) {
+        const idSet = new Set(nodeIds);
+        return this.rawLinks.filter(l => {
+            const src = l.source?.id || l.source;
+            const tgt = l.target?.id || l.target;
+            return idSet.has(src) && idSet.has(tgt);
+        });
+    }
+    
+    render() {
+        const rect = this.container.getBoundingClientRect();
+        const width = rect.width || 500;
+        const height = rect.height || 400;
+        
+        // Keep defs, remove everything else
+        this.svg.selectAll('g').remove();
+        
+        const g = this.svg.append('g');
+        
+        // Zoom
+        this.svg.call(d3.zoom().scaleExtent([0.3, 4]).on('zoom', (e) => g.attr('transform', e.transform)));
+        
+        // Get visible data
+        const visibleNodes = this.getVisibleNodes();
+        const visibleIds = visibleNodes.map(n => n.id);
+        const visibleLinks = this.getVisibleLinks(visibleIds);
+        
+        // Simulation
+        this.simulation = d3.forceSimulation(visibleNodes)
+            .force('link', d3.forceLink(visibleLinks).id(d => d.id).distance(d => {
+                if (['CONTAINS', 'MENTIONS', 'DISCUSSES'].includes(d.type)) return 50;
+                return 70;
+            }).strength(0.5))
+            .force('charge', d3.forceManyBody().strength(-150))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => this.getSize(d) + 8));
+        
+        // Links - simple lines
+        const link = g.append('g').selectAll('line')
+            .data(visibleLinks).join('line')
+            .attr('stroke', d => {
+                // Semantic edges in target color, others gray
+                if (['DISCUSSES', 'MENTIONS'].includes(d.type)) {
+                    const target = visibleNodes.find(n => n.id === (d.target.id || d.target));
+                    return this.colors[target?.type] || this.colors.default;
+                }
+                return this.isDark ? '#27272a' : '#d4d4d8';
+            })
+            .attr('stroke-width', d => ['DISCUSSES', 'MENTIONS'].includes(d.type) ? 1.5 : 1)
+            .attr('stroke-opacity', d => ['DISCUSSES', 'MENTIONS'].includes(d.type) ? 0.6 : 0.4)
+            .attr('stroke-dasharray', d => ['DISCUSSES', 'MENTIONS'].includes(d.type) ? '4,3' : 'none');
+        
+        // Animated flowing particles along edges
+        const pulseGroup = g.append('g').attr('class', 'pulses');
+        
+        // Create multiple flowing particles for links
+        const animatedLinks = visibleLinks.filter((_, i) => i % 2 === 0).slice(0, 20);
+        
+        animatedLinks.forEach((linkData, linkIndex) => {
+            const getColor = () => {
+                if (['DISCUSSES', 'MENTIONS'].includes(linkData.type)) {
+                    const target = visibleNodes.find(n => n.id === (linkData.target.id || linkData.target));
+                    return this.colors[target?.type] || '#f59e0b';
+                }
+                return '#f59e0b';
+            };
+            
+            // Create 2-3 particles per link for flowing effect
+            const particleCount = Math.random() > 0.5 ? 3 : 2;
+            
+            for (let p = 0; p < particleCount; p++) {
+                const particle = pulseGroup.append('circle')
+                    .attr('r', 2 + Math.random() * 1.5)
+                    .attr('fill', getColor())
+                    .attr('opacity', 0)
+                    .attr('filter', 'url(#glow)');
+                
+                const animateParticle = () => {
+                    const source = linkData.source;
+                    const target = linkData.target;
+                    if (!source.x || !target.x) {
+                        setTimeout(animateParticle, 500);
+                        return;
+                    }
+                    
+                    const duration = 1500 + Math.random() * 1500;
+                    const direction = Math.random() > 0.3; // 70% source to target
+                    
+                    const startX = direction ? source.x : target.x;
+                    const startY = direction ? source.y : target.y;
+                    const endX = direction ? target.x : source.x;
+                    const endY = direction ? target.y : source.y;
+                    
+                    particle
+                        .attr('cx', startX)
+                        .attr('cy', startY)
+                        .attr('opacity', 0)
+                        .transition()
+                        .duration(duration * 0.1)
+                        .attr('opacity', 0.9)
+                        .transition()
+                        .duration(duration * 0.8)
+                        .ease(d3.easeQuadInOut)
+                        .attr('cx', endX)
+                        .attr('cy', endY)
+                        .transition()
+                        .duration(duration * 0.1)
+                        .attr('opacity', 0)
+                        .on('end', () => {
+                            setTimeout(animateParticle, 300 + Math.random() * 1500);
+                        });
+                };
+                
+                // Stagger particle starts
+                setTimeout(animateParticle, linkIndex * 150 + p * 500 + Math.random() * 800);
+            }
+        });
+        
+        // Nodes
+        const node = g.append('g').selectAll('g.node')
+            .data(visibleNodes).join('g').attr('class', 'node')
+            .style('cursor', 'grab')
+            .call(this.drag())
+            .on('click', (e, d) => this.showDetails(d));
+        
+        // Node circles - flat, simple
+        node.append('circle')
+            .attr('r', d => this.getSize(d))
+            .attr('fill', d => this.colors[d.type] || this.colors.default)
+            .attr('stroke', d => this.colors[d.type] || this.colors.default)
+            .attr('stroke-width', 2)
+            .attr('stroke-opacity', 0.3);
+        
+        // Message type indicator
+        node.filter(d => d.type === 'Message' && d.subtype)
+            .append('circle')
+            .attr('r', 2)
+            .attr('cx', d => this.getSize(d) * 0.6)
+            .attr('cy', d => -this.getSize(d) * 0.6)
+            .attr('fill', d => d.subtype === 'user' ? '#f59e0b' : '#8b5cf6');
+        
+        // Labels for larger nodes
+        const labels = g.append('g').selectAll('text')
+            .data(visibleNodes.filter(n => this.getSize(n) >= 9))
+            .join('text')
+            .attr('font-size', '10px')
+            .attr('font-weight', '500')
+            .attr('fill', this.isDark ? '#a1a1aa' : '#71717a')
+            .attr('text-anchor', 'middle')
+            .attr('dy', d => this.getSize(d) + 14)
+            .text(d => (d.label || d.id).substring(0, 15));
+        
+        // Hover effects
+        node.on('mouseover', function() {
+            d3.select(this).select('circle').attr('stroke-opacity', 0.8);
+            d3.select(this).style('cursor', 'pointer');
+        }).on('mouseout', function() {
+            d3.select(this).select('circle').attr('stroke-opacity', 0.3);
+        });
+        
+        // Tick
+        this.simulation.on('tick', () => {
+            link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+            node.attr('transform', d => `translate(${d.x},${d.y})`);
+            labels.attr('x', d => d.x).attr('y', d => d.y);
+        });
+    }
+    
+    getSize(n) { return this.sizes[n.type] || this.sizes.default; }
+    
+    drag() {
+        return d3.drag()
+            .on('start', (e, d) => {
+                if (!e.active) this.simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            })
+            .on('drag', (e, d) => {
+                d.fx = e.x;
+                d.fy = e.y;
+            })
+            .on('end', (e, d) => {
+                if (!e.active) this.simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            });
+    }
+    
+    filter(type) {
+        this.activeFilter = type;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            const isActive = btn.dataset.filter === type;
+            if (isActive) {
+                btn.className = 'filter-btn active px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500 text-white transition-all';
+            } else {
+                btn.classList.remove('active', 'bg-amber-500', 'text-white');
+            }
+        });
+        this.render();
+    }
+    
+    search(term) {
+        this.searchTerm = term;
+        this.render();
+    }
+    
+    showDetails(node) {
+        const panel = document.getElementById('node-details');
+        const color = this.colors[node.type] || this.colors.default;
+        
+        // Find connections
+        const connections = [];
+        this.rawLinks.forEach(l => {
+            const src = l.source?.id || l.source;
+            const tgt = l.target?.id || l.target;
+            if (src === node.id) {
+                const n = this.rawNodes.find(x => x.id === tgt);
+                if (n) connections.push({ node: n, type: l.type, dir: '→' });
+            } else if (tgt === node.id) {
+                const n = this.rawNodes.find(x => x.id === src);
+                if (n) connections.push({ node: n, type: l.type, dir: '←' });
+            }
+        });
+        
+        const connectionsHtml = connections.length > 0 ? `
+            <div class="mt-3 pt-3 border-t ${this.isDark ? 'border-zinc-700' : 'border-zinc-200'}">
+                <p class="text-[10px] uppercase tracking-wider mb-2 ${this.isDark ? 'text-zinc-500' : 'text-zinc-400'}">
+                    Connections (${connections.length})
+                </p>
+                <div class="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto">
+                    ${connections.slice(0, 15).map(c => `
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] ${this.isDark ? 'bg-zinc-800' : 'bg-zinc-100'}">
+                            <span class="w-1.5 h-1.5 rounded-full" style="background: ${this.colors[c.node.type] || this.colors.default}"></span>
+                            <span class="${this.isDark ? 'text-zinc-300' : 'text-zinc-600'}">${(c.node.label || c.node.id).substring(0, 15)}</span>
+                            <span class="${this.isDark ? 'text-zinc-500' : 'text-zinc-400'}">${c.dir}</span>
+                        </span>
+                    `).join('')}
+                    ${connections.length > 15 ? `<span class="text-[10px] ${this.isDark ? 'text-zinc-500' : 'text-zinc-400'}">+${connections.length - 15} more</span>` : ''}
+                </div>
+            </div>
+        ` : '';
+        
+        panel.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background: ${color}20;">
+                    <div class="w-3 h-3 rounded-full" style="background: ${color};"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-sm truncate ${this.isDark ? 'text-zinc-100' : 'text-zinc-800'}">${node.label || node.id}</h3>
+                    <p class="text-xs ${this.isDark ? 'text-zinc-500' : 'text-zinc-400'}">${node.type}${node.subtype ? ` · ${node.subtype}` : ''}</p>
+                    ${node.context ? `<p class="text-xs mt-2 ${this.isDark ? 'text-zinc-400' : 'text-zinc-500'} leading-relaxed">${node.context.substring(0, 120)}${node.context.length > 120 ? '...' : ''}</p>` : ''}
+                    ${connectionsHtml}
+                </div>
+                <button onclick="document.getElementById('node-details').classList.add('hidden')" 
+                        class="p-1 rounded ${this.isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-400 hover:text-zinc-600'}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+        panel.classList.remove('hidden');
+    }
+    
+    async refresh() {
+        await this.loadData();
+        this.render();
+    }
+    
+    hideLoading() { 
+        document.getElementById('graph-loading')?.remove(); 
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => { 
+        if (document.getElementById('graph-container')) {
+            window.graphManager = new GraphManager(); 
+        }
+    }, 100);
+});
+</script>

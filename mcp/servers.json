@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "searxng": {
+      "description": "Web search via SearXNG (meta search - Google, Bing, DuckDuckGo, etc.)",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "SEARXNG_URL",
+        "isokoliuk/mcp-searxng:latest"
+      ],
+      "env": {
+        "SEARXNG_URL": "http://host.docker.internal:8888"
+      },
+      "enabled": true,
+      "tools": [
+        "searxng_web_search",
+        "web_url_read"
+      ]
+    },
+    "mcp-discord": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "DISCORD_TOKEN",
+        "mcp/mcp-discord"
+      ],
+      "env": {
+        "DISCORD_TOKEN": "${DISCORD_TOKEN}"
+      },
+      "enabled": true,
+      "tools": [
+        "send_discord_message",
+        "fetch_discord_messages"
+      ],
+      "description": "Send and fetch messages from Discord channels"
+    }
+  },
+  "_comment": "Set 'enabled: true' to activate an MCP server. PAAW will start it automatically. Use ${VAR} for environment variables."
+}

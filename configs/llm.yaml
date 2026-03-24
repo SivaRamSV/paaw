@@ -1,0 +1,59 @@
+# =============================================================================
+# PAAW LLM Configuration
+# =============================================================================
+# Model routing and provider settings
+# =============================================================================
+
+# Model selection by task type
+models:
+  # Fast, cheap for simple tasks
+  default: gpt-4o-mini
+  
+  # Powerful for complex reasoning
+  reasoning: claude-sonnet-4-20250514
+  
+  # Local model for private data (requires Ollama)
+  private: ollama/llama3.2
+  
+  # Embeddings
+  embedding: text-embedding-3-small
+
+# Automatic routing rules
+routing:
+  # These task types use the fast/cheap model
+  simple:
+    - status_check
+    - greeting
+    - clarification
+    - simple_question
+  
+  # These task types use the powerful model
+  complex:
+    - planning
+    - analysis
+    - multi_step
+    - code_generation
+    - debugging
+  
+  # These use local model for privacy
+  private:
+    - personal_info
+    - health
+    - finance
+    - passwords
+
+# Provider-specific settings
+providers:
+  openai:
+    # Retry settings
+    max_retries: 3
+    retry_delay: 1.0
+    
+  anthropic:
+    max_retries: 3
+    retry_delay: 1.0
+    
+  ollama:
+    base_url: "http://localhost:11434"
+    max_retries: 2
+    retry_delay: 0.5

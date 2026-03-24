@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ Server Room - PAAW</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        void: {
+                            950: '#050507',
+                            900: '#09090b',
+                            850: '#0c0c0f',
+                            800: '#111114',
+                            700: '#18181b',
+                            600: '#27272a',
+                            500: '#3f3f46',
+                            400: '#52525b',
+                            300: '#71717a',
+                        },
+                        neon: {
+                            orange: '#ff9500',
+                            amber: '#ffb340',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+<style>
+    /* Server Room Theme - PAAW Aligned */
+    body {
+        background: #050507;
+        min-height: 100vh;
+        color: #fafafa;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    /* Subtle grid background */
+    .grid-bg {
+        position: fixed;
+        inset: 0;
+        background-image: 
+            linear-gradient(rgba(255, 149, 0, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 149, 0, 0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* Rack Container */
+    .rack {
+        background: linear-gradient(180deg, #111114 0%, #09090b 100%);
+        border: 1px solid #27272a;
+        border-radius: 16px;
+        box-shadow: 0 0 40px rgba(255, 149, 0, 0.05);
+        position: relative;
+        overflow: visible;
+    }
+    
+    .rack::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ff9500, #ffb340, #ff9500);
+        opacity: 0.8;
+    }
+    
+    .rack-title {
+        background: linear-gradient(90deg, #111114, #18181b);
+        border-bottom: 1px solid #27272a;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .rack-title-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    /* Server Unit */
+    .server-unit {
+        background: #0c0c0f;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+        margin: 0.75rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .server-unit:hover {
+        border-color: #3f3f46;
+        box-shadow: 0 0 20px rgba(255, 149, 0, 0.1);
+        transform: translateX(4px);
+    }
+    
+    .server-unit::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #27272a;
+        transition: background 0.3s ease;
+    }
+    
+    .server-unit.online::before {
+        background: #ff9500;
+        box-shadow: 0 0 10px rgba(255, 149, 0, 0.5);
+    }
+    
+    .server-unit.offline::before {
+        background: #ef4444;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    }
+    
+    .server-unit.paused::before {
+        background: #eab308;
+        box-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+    }
+    
+    /* Server Header */
+    .server-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1rem 1rem 1.5rem;
+        gap: 1rem;
+        cursor: pointer;
+    }
+    
+    .server-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .server-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .server-name {
+        font-weight: 600;
+        color: #fafafa;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .server-desc {
+        color: #71717a;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Status Indicator */
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-online {
+        background: rgba(255, 149, 0, 0.15);
+        color: #ff9500;
+        border: 1px solid rgba(255, 149, 0, 0.3);
+    }
+    
+    .status-offline {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-paused {
+        background: rgba(234, 179, 8, 0.15);
+        color: #eab308;
+        border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+    
+    /* Server Details */
+    .server-details {
+        padding: 0 1rem 1rem 1.5rem;
+        display: none;
+    }
+    
+    .server-unit.expanded .server-details {
+        display: block;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #18181b;
+        font-size: 0.85rem;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        color: #52525b;
+    }
+    
+    .detail-value {
+        color: #a1a1aa;
+        font-family: monospace;
+    }
+    
+    /* Action Buttons */
+    .server-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-top: 1px solid #18181b;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    
+    .action-btn-primary {
+        background: linear-gradient(135deg, #ff9500, #ffb340);
+        color: #000;
+    }
+    
+    .action-btn-primary:hover {
+        box-shadow: 0 0 20px rgba(255, 149, 0, 0.4);
+    }
+    
+    .action-btn-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .action-btn-danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+    }
+    
+    .action-btn-secondary {
+        background: rgba(255, 149, 0, 0.1);
+        color: #ffb340;
+        border-color: rgba(255, 149, 0, 0.3);
+    }
+    
+    .action-btn-secondary:hover {
+        background: rgba(255, 149, 0, 0.2);
+    }
+    
+    /* Add New Button */
+    .add-server-btn {
+        border: 2px dashed #27272a;
+        background: transparent;
+        border-radius: 12px;
+        margin: 0.75rem;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #52525b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        width: calc(100% - 1.5rem);
+    }
+    
+    .add-server-btn:hover {
+        border-color: #ff9500;
+        color: #ff9500;
+        background: rgba(255, 149, 0, 0.05);
+    }
+    
+    /* LED Indicators */
+    .led-strip {
+        display: flex;
+        gap: 4px;
+        margin-left: auto;
+    }
+    
+    .led {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #27272a;
+    }
+    
+    .led.active {
+        background: #ff9500;
+        box-shadow: 0 0 8px rgba(255, 149, 0, 0.8);
+        animation: pulse-led 2s infinite;
+    }
+    
+    .led.warning {
+        background: #eab308;
+        box-shadow: 0 0 8px rgba(234, 179, 8, 0.8);
+    }
+    
+    @keyframes pulse-led {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .led.error {
+        background: #ef4444;
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+    }
+
+    /* Tools Tags */
+    .tools-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .tool-tag {
+        background: rgba(255, 149, 0, 0.1);
+        color: #ffb340;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-family: monospace;
+        border: 1px solid rgba(255, 149, 0, 0.2);
+    }
+    
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 5, 7, 0.9);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal {
+        background: linear-gradient(180deg, #111114 0%, #09090b 100%);
+        border: 1px solid #27272a;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+        box-shadow: 0 0 60px rgba(255, 149, 0, 0.1);
+    }
+    
+    .modal-overlay.active .modal {
+        transform: scale(1);
+    }
+    
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #27272a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #fafafa;
+    }
+    
+    .modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: none;
+        color: #71717a;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    
+    .modal-close:hover {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+        display: block;
+        color: #71717a;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: #0c0c0f;
+        border: 1px solid #27272a;
+        border-radius: 10px;
+        color: #fafafa;
+        font-size: 0.9rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+        outline: none;
+        border-color: #ff9500;
+        box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
+    }
+    
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .form-hint {
+        color: #52525b;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Header Stats */
+    .stats-bar {
+        display: flex;
+        gap: 2rem;
+        padding: 1.25rem 1.5rem;
+        background: #0c0c0f;
+        border: 1px solid #27272a;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ff9500, #ffb340);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        color: #52525b;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Glow effect for header */
+    .glow-text {
+        text-shadow: 0 0 20px rgba(255, 149, 0, 0.3);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff9500; }
+    
+    /* Utility classes */
+    .mt-4 { margin-top: 1rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .flex { display: flex; }
+    .flex-1 { flex: 1; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .text-center { text-align: center; }
+    .text-amber-500 { color: #f59e0b; }
+    .hidden { display: none !important; }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+</head>
+<body>
+<div class="relative">
+    <div class="grid-bg"></div>
+    
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg" style="box-shadow: 0 0 20px rgba(255, 149, 0, 0.3);">
+                    <span class="text-2xl">🖥️</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white glow-text">Server Room</h1>
+                    <p class="text-zinc-500 text-sm">Manage MCP Servers, Skills, and Jobs</p>
+                </div>
+            </div>
+            <a href="/dashboard" class="action-btn action-btn-secondary flex items-center gap-2">
+                <span>←</span> Back to Dashboard
+            </a>
+        </div>
+        
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="stats-bar" hx-get="/api/server-room/stats" hx-trigger="load, every 30s" hx-swap="innerHTML">
+            <div class="stat-item">
+                <div class="stat-value">-</div>
+                <div class="stat-label">MCP Servers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">-</div>
+                <div class="stat-label">Skills</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">-</div>
+                <div class="stat-label">Jobs</div>
+            </div>
+        </div>
+        
+        <!-- Racks Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- MCP Servers Rack -->
+            <div class="rack">
+                <div class="rack-title">
+                    <div class="rack-title-icon bg-gradient-to-br from-orange-500/20 to-amber-600/20 border border-orange-500/30">🔌</div>
+                    <div>
+                        <div class="text-white font-semibold">MCP Servers</div>
+                        <div class="text-zinc-500 text-sm">External tool providers</div>
+                    </div>
+                </div>
+                <div id="mcp-servers-list" hx-get="/api/server-room/mcps" hx-trigger="load" hx-swap="innerHTML">
+                    <div class="p-4 text-center text-zinc-600">Loading...</div>
+                </div>
+                <button class="add-server-btn" onclick="openModal('mcp')">
+                    <span class="text-xl">+</span>
+                    <span>Add MCP Server</span>
+                </button>
+            </div>
+            
+            <!-- Skills Rack -->
+            <div class="rack">
+                <div class="rack-title">
+                    <div class="rack-title-icon bg-gradient-to-br from-amber-500/20 to-yellow-600/20 border border-amber-500/30">🧠</div>
+                    <div>
+                        <div class="text-white font-semibold">Skills</div>
+                        <div class="text-zinc-500 text-sm">Agent capabilities</div>
+                    </div>
+                </div>
+                <div id="skills-list" hx-get="/api/server-room/skills" hx-trigger="load" hx-swap="innerHTML">
+                    <div class="p-4 text-center text-zinc-600">Loading...</div>
+                </div>
+                <button class="add-server-btn" onclick="openModal('skill')">
+                    <span class="text-xl">+</span>
+                    <span>Add Skill</span>
+                </button>
+            </div>
+            
+            <!-- Jobs Rack -->
+            <div class="rack">
+                <div class="rack-title">
+                    <div class="rack-title-icon bg-gradient-to-br from-orange-600/20 to-red-500/20 border border-orange-600/30">⏰</div>
+                    <div>
+                        <div class="text-white font-semibold">Scheduled Jobs</div>
+                        <div class="text-zinc-500 text-sm">Automated tasks</div>
+                    </div>
+                </div>
+                <div id="jobs-list" hx-get="/api/server-room/jobs" hx-trigger="load" hx-swap="innerHTML">
+                    <div class="p-4 text-center text-zinc-600">Loading...</div>
+                </div>
+                <button class="add-server-btn" onclick="openModal('job')">
+                    <span class="text-xl">+</span>
+                    <span>Add Job</span>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Add Job Modal - Wizard Style -->
+<div class="modal-overlay" id="modal-add-job">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title">⏰ Create Scheduled Job</h3>
+            <button class="modal-close" onclick="closeModal('job')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-job-form">
+                <!-- Step indicator -->
+                <div class="flex gap-2 mb-6">
+                    <div class="step-indicator active" data-step="1">1. Basics</div>
+                    <div class="step-indicator" data-step="2">2. Schedule</div>
+                    <div class="step-indicator" data-step="3">3. Review</div>
+                </div>
+                
+                <!-- Step 1: Basics -->
+                <div id="job-step-1" class="form-step active">
+                    <div class="form-group">
+                        <label class="form-label">Job Name *</label>
+                        <input type="text" name="name" id="job-name" class="form-input" placeholder="e.g., Morning Tech News, Weekly Report" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">What should this job do? *</label>
+                        <textarea name="goal" id="job-goal" class="form-textarea" rows="3" placeholder="Describe the task... e.g., Search for the latest AI and tech news, summarize the top 5 stories, and send to my Discord channel" required></textarea>
+                        <div class="form-hint">Be specific - the AI will use this to understand your intent</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Select Skill *</label>
+                        <div class="form-hint mb-2">Choose which skill should handle this job:</div>
+                        <div id="skill-selector" class="skill-selector" hx-get="/api/server-room/skills-cards" hx-trigger="load" hx-swap="innerHTML">
+                            <div class="p-4 text-center text-zinc-600">Loading skills...</div>
+                        </div>
+                        <input type="hidden" name="skill" id="job-skill" required>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" class="action-btn action-btn-primary flex-1" onclick="nextJobStep(2)">
+                            Next →
+                        </button>
+                        <button type="button" class="action-btn action-btn-secondary" onclick="closeModal('job')">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Schedule & Notification -->
+                <div id="job-step-2" class="form-step">
+                    <div class="form-group">
+                        <label class="form-label">Schedule *</label>
+                        <div class="schedule-options">
+                            <label class="schedule-option">
+                                <input type="radio" name="schedule_type" value="daily_morning" checked>
+                                <span class="schedule-card">
+                                    <span class="schedule-icon">🌅</span>
+                                    <span class="schedule-text">Daily at 8 AM</span>
+                                </span>
+                            </label>
+                            <label class="schedule-option">
+                                <input type="radio" name="schedule_type" value="daily_evening">
+                                <span class="schedule-card">
+                                    <span class="schedule-icon">🌆</span>
+                                    <span class="schedule-text">Daily at 6 PM</span>
+                                </span>
+                            </label>
+                            <label class="schedule-option">
+                                <input type="radio" name="schedule_type" value="hourly">
+                                <span class="schedule-card">
+                                    <span class="schedule-icon">⏱️</span>
+                                    <span class="schedule-text">Every 4 hours</span>
+                                </span>
+                            </label>
+                            <label class="schedule-option">
+                                <input type="radio" name="schedule_type" value="weekly">
+                                <span class="schedule-card">
+                                    <span class="schedule-icon">📅</span>
+                                    <span class="schedule-text">Weekly (Mon 9 AM)</span>
+                                </span>
+                            </label>
+                            <label class="schedule-option">
+                                <input type="radio" name="schedule_type" value="custom">
+                                <span class="schedule-card">
+                                    <span class="schedule-icon">⚙️</span>
+                                    <span class="schedule-text">Custom Cron</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="custom-cron-group" style="display: none;">
+                        <label class="form-label">Custom Cron Expression</label>
+                        <input type="text" name="custom_cron" id="job-cron" class="form-input" placeholder="0 8 * * *">
+                        <div class="form-hint">Format: minute hour day month weekday (e.g., "0 9 * * 1-5" = 9 AM weekdays)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">How to Notify? *</label>
+                        <div class="notify-options">
+                            <label class="notify-option">
+                                <input type="radio" name="notify_type" value="discord" checked>
+                                <span class="notify-card">
+                                    <span class="notify-icon">💬</span>
+                                    <span>Discord Channel</span>
+                                </span>
+                            </label>
+                            <label class="notify-option">
+                                <input type="radio" name="notify_type" value="chat">
+                                <span class="notify-card">
+                                    <span class="notify-icon">🐾</span>
+                                    <span>PAAW Chat</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="discord-channel-group">
+                        <label class="form-label">Discord Channel ID</label>
+                        <input type="text" name="discord_channel" id="job-discord" class="form-input" placeholder="e.g., 1485699544216764540" value="1485699544216764540">
+                        <div class="form-hint">The channel where results will be posted</div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" class="action-btn action-btn-secondary" onclick="nextJobStep(1)">
+                            ← Back
+                        </button>
+                        <button type="button" class="action-btn action-btn-primary flex-1" onclick="nextJobStep(3)">
+                            Next →
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Review & Create -->
+                <div id="job-step-3" class="form-step">
+                    <div class="review-section">
+                        <h4 class="text-zinc-400 text-sm uppercase tracking-wide mb-4">Review Your Job</h4>
+                        
+                        <div class="review-card">
+                            <div class="review-item">
+                                <span class="review-label">Name</span>
+                                <span class="review-value" id="review-job-name">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Goal</span>
+                                <span class="review-value" id="review-job-goal">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Skill</span>
+                                <span class="review-value" id="review-job-skill">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Schedule</span>
+                                <span class="review-value" id="review-job-schedule">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Notification</span>
+                                <span class="review-value" id="review-job-notify">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-hint mt-4 text-center">
+                            🤖 AI will generate the complete job configuration based on your inputs
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" class="action-btn action-btn-secondary" onclick="nextJobStep(2)">
+                            ← Back
+                        </button>
+                        <button type="button" class="action-btn action-btn-primary flex-1" onclick="createJob()" id="create-job-btn">
+                            🚀 Create Job
+                        </button>
+                    </div>
+                    
+                    <div id="job-creating" class="hidden mt-4 text-center">
+                        <div class="flex items-center justify-center gap-2 text-amber-500">
+                            <span class="animate-spin">⚙️</span>
+                            <span>AI is generating your job...</span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add MCP Modal -->
+<div class="modal-overlay" id="modal-add-mcp">
+    <div class="modal" style="max-width: 750px;">
+        <div class="modal-header">
+            <h3 class="modal-title">🔌 Add MCP Server</h3>
+            <button class="modal-close" onclick="closeModal('mcp')">✕</button>
+        </div>
+        <div class="modal-body">
+            <!-- Tab selector -->
+            <div class="flex gap-2 mb-6">
+                <button type="button" class="tab-btn active" onclick="switchMCPTab('form')" id="mcp-tab-form">
+                    📝 Form Builder
+                </button>
+                <button type="button" class="tab-btn" onclick="switchMCPTab('json')" id="mcp-tab-json">
+                    { } JSON Editor
+                </button>
+            </div>
+            
+            <!-- Form Builder Tab -->
+            <div id="mcp-form-tab" class="mcp-tab-content active">
+                <form id="add-mcp-form">
+                    <div class="form-group">
+                        <label class="form-label">Server Name *</label>
+                        <input type="text" id="mcp-name" class="form-input" placeholder="e.g., github, slack, my-custom-mcp" required>
+                        <div class="form-hint">Unique identifier (lowercase, no spaces)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" id="mcp-desc" class="form-input" placeholder="What does this MCP server provide?">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Command *</label>
+                        <select id="mcp-command-type" class="form-select" onchange="updateMCPCommandUI()">
+                            <option value="docker">docker</option>
+                            <option value="npx">npx</option>
+                            <option value="uvx">uvx</option>
+                            <option value="node">node</option>
+                            <option value="python">python</option>
+                            <option value="custom">Custom command</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="mcp-custom-command-group" style="display: none;">
+                        <label class="form-label">Custom Command</label>
+                        <input type="text" id="mcp-custom-command" class="form-input" placeholder="e.g., /usr/local/bin/my-mcp">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Arguments</label>
+                        <div id="mcp-args-container">
+                            <!-- Args will be added here dynamically -->
+                        </div>
+                        <button type="button" class="add-item-btn" onclick="addMCPArg()">
+                            + Add Argument
+                        </button>
+                        <div class="form-hint">e.g., for docker: run, -i, --rm, image-name</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Environment Variables</label>
+                        <div id="mcp-env-container">
+                            <!-- Env vars will be added here dynamically -->
+                        </div>
+                        <button type="button" class="add-item-btn" onclick="addMCPEnv()">
+                            + Add Environment Variable
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tools (comma-separated)</label>
+                        <input type="text" id="mcp-tools" class="form-input" placeholder="e.g., search, fetch_content, send_message">
+                        <div class="form-hint">List the tool names this MCP provides</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="mcp-enabled" checked style="accent-color: #ff9500;">
+                            Enable this MCP server
+                        </label>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- JSON Editor Tab -->
+            <div id="mcp-json-tab" class="mcp-tab-content">
+                <div class="form-group">
+                    <label class="form-label">Server Name *</label>
+                    <input type="text" id="mcp-json-name" class="form-input" placeholder="e.g., my-mcp-server">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Configuration JSON *</label>
+                    <textarea id="mcp-json-editor" class="form-textarea json-editor" rows="15" oninput="updateMCPPreview()" placeholder='{
+  "description": "My MCP server description",
+  "command": "docker",
+  "args": ["run", "-i", "--rm", "-e", "API_KEY", "image-name"],
+  "env": {
+    "API_KEY": "your-api-key-here"
+  },
+  "enabled": true,
+  "tools": ["tool1", "tool2"]
+}'></textarea>
+                    <div class="form-hint">Paste or edit the MCP server configuration directly</div>
+                </div>
+            </div>
+            
+            <!-- Preview -->
+            <div class="form-group mt-4">
+                <label class="form-label">Preview</label>
+                <pre id="mcp-preview" class="json-preview">{ }</pre>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="action-btn action-btn-secondary" onclick="testMCPBeforeSave()" id="test-mcp-btn">
+                    🔍 Test Connection
+                </button>
+                <button type="button" class="action-btn action-btn-primary flex-1" onclick="saveMCP()" id="save-mcp-btn">
+                    💾 Save MCP Server
+                </button>
+                <button type="button" class="action-btn action-btn-secondary" onclick="closeModal('mcp')">
+                    Cancel
+                </button>
+            </div>
+            
+            <div id="mcp-test-result" class="hidden mt-4">
+                <!-- Test result will appear here -->
+            </div>
+            
+            <div id="mcp-saving" class="hidden mt-4 text-center">
+                <div class="flex items-center justify-center gap-2 text-amber-500">
+                    <span class="animate-spin">⚙️</span>
+                    <span>Saving MCP server...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Skill Modal -->
+<div class="modal-overlay" id="modal-add-skill">
+    <div class="modal" style="max-width: 650px;">
+        <div class="modal-header">
+            <h3 class="modal-title">🧠 Create New Skill</h3>
+            <button class="modal-close" onclick="closeModal('skill')">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-skill-form">
+                <div class="form-group">
+                    <label class="form-label">Skill Name *</label>
+                    <input type="text" name="name" id="skill-name" class="form-input" placeholder="e.g., email_writer, code_reviewer" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">What does this skill do? *</label>
+                    <textarea name="description" id="skill-description" class="form-textarea" rows="3" placeholder="Describe the skill's purpose and how it should behave..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">What tools can it use?</label>
+                    <div class="form-hint mb-2">Select the MCP tools this skill needs:</div>
+                    <div id="tool-selector" hx-get="/api/server-room/tools-list" hx-trigger="load" hx-swap="innerHTML">
+                        <div class="p-4 text-center text-zinc-600">Loading available tools...</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Keywords (comma-separated)</label>
+                    <input type="text" name="keywords" id="skill-keywords" class="form-input" placeholder="email, write, compose, draft">
+                    <div class="form-hint">Keywords help PAAW know when to use this skill</div>
+                </div>
+                
+                <div class="flex gap-3 mt-6">
+                    <button type="button" class="action-btn action-btn-primary flex-1" onclick="createSkill()" id="create-skill-btn">
+                        🧠 Create Skill
+                    </button>
+                    <button type="button" class="action-btn action-btn-secondary" onclick="closeModal('skill')">
+                        Cancel
+                    </button>
+                </div>
+                
+                <div id="skill-creating" class="hidden mt-4 text-center">
+                    <div class="flex items-center justify-center gap-2 text-amber-500">
+                        <span class="animate-spin">⚙️</span>
+                        <span>AI is creating your skill...</span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Test Result Modal -->
+<div class="modal-overlay" id="modal-test-result">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="test-result-title">🔍 Test Connection</h3>
+            <button class="modal-close" onclick="closeTestModal()">✕</button>
+        </div>
+        <div class="modal-body" id="test-result-content">
+            <!-- Test results will be inserted here -->
+        </div>
+        <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid #27272a;">
+            <button class="action-btn action-btn-secondary" onclick="closeTestModal()" style="width: 100%;">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit MCP Modal -->
+<div class="modal-overlay" id="modal-edit-mcp">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ Edit MCP Server</h3>
+            <button class="modal-close" onclick="closeEditModal('mcp')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Server Name</label>
+                <input type="text" id="edit-mcp-name" class="form-input" readonly style="opacity: 0.7;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Configuration JSON</label>
+                <textarea id="edit-mcp-json" class="form-textarea json-editor" rows="15"></textarea>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="action-btn action-btn-primary flex-1" onclick="saveEditMCP()" id="save-edit-mcp-btn">
+                    💾 Save Changes
+                </button>
+                <button type="button" class="action-btn action-btn-secondary" onclick="closeEditModal('mcp')">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Skill Modal -->
+<div class="modal-overlay" id="modal-edit-skill">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ Edit Skill</h3>
+            <button class="modal-close" onclick="closeEditModal('skill')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Skill ID</label>
+                <input type="text" id="edit-skill-name" class="form-input" readonly style="opacity: 0.7;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">skill.md Content</label>
+                <textarea id="edit-skill-content" class="form-textarea" rows="20" style="font-family: monospace; font-size: 0.85rem;"></textarea>
+                <div class="form-hint">Edit the markdown content directly</div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="action-btn action-btn-primary flex-1" onclick="saveEditSkill()" id="save-edit-skill-btn">
+                    💾 Save Changes
+                </button>
+                <button type="button" class="action-btn action-btn-secondary" onclick="closeEditModal('skill')">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Job Modal -->
+<div class="modal-overlay" id="modal-edit-job">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ Edit Job</h3>
+            <button class="modal-close" onclick="closeEditModal('job')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Job ID</label>
+                <input type="text" id="edit-job-name" class="form-input" readonly style="opacity: 0.7;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">job.md Content</label>
+                <textarea id="edit-job-content" class="form-textarea" rows="20" style="font-family: monospace; font-size: 0.85rem;"></textarea>
+                <div class="form-hint">Edit the markdown content directly</div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" class="action-btn action-btn-primary flex-1" onclick="saveEditJob()" id="save-edit-job-btn">
+                    💾 Save Changes
+                </button>
+                <button type="button" class="action-btn action-btn-secondary" onclick="closeEditModal('job')">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Step indicators */
+    .step-indicator {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        background: #18181b;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: #52525b;
+        transition: all 0.2s;
+    }
+    .step-indicator.active {
+        background: rgba(255, 149, 0, 0.15);
+        color: #ff9500;
+        border: 1px solid rgba(255, 149, 0, 0.3);
+    }
+    .step-indicator.completed {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+    }
+    
+    /* Form steps */
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+    
+    /* Skill selector cards */
+    .skill-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.75rem;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+    .skill-card {
+        background: #0c0c0f;
+        border: 2px solid #27272a;
+        border-radius: 10px;
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .skill-card:hover {
+        border-color: #3f3f46;
+    }
+    .skill-card.selected {
+        border-color: #ff9500;
+        background: rgba(255, 149, 0, 0.05);
+    }
+    .skill-card-name {
+        font-weight: 600;
+        color: #fafafa;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    .skill-card-desc {
+        color: #71717a;
+        font-size: 0.75rem;
+    }
+    
+    /* Schedule options */
+    .schedule-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.5rem;
+    }
+    .schedule-option input { display: none; }
+    .schedule-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.75rem;
+        background: #0c0c0f;
+        border: 2px solid #27272a;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .schedule-option input:checked + .schedule-card {
+        border-color: #ff9500;
+        background: rgba(255, 149, 0, 0.05);
+    }
+    .schedule-icon { font-size: 1.25rem; }
+    .schedule-text { font-size: 0.75rem; color: #a1a1aa; }
+    
+    /* Notify options */
+    .notify-options {
+        display: flex;
+        gap: 0.75rem;
+    }
+    .notify-option { flex: 1; }
+    .notify-option input { display: none; }
+    .notify-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #0c0c0f;
+        border: 2px solid #27272a;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        color: #a1a1aa;
+    }
+    .notify-option input:checked + .notify-card {
+        border-color: #ff9500;
+        background: rgba(255, 149, 0, 0.05);
+        color: #fafafa;
+    }
+    .notify-icon { font-size: 1.25rem; }
+    
+    /* Review section */
+    .review-card {
+        background: #0c0c0f;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+        padding: 1rem;
+    }
+    .review-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #18181b;
+    }
+    .review-item:last-child { border-bottom: none; }
+    .review-label {
+        color: #52525b;
+        font-size: 0.85rem;
+        min-width: 80px;
+    }
+    .review-value {
+        color: #fafafa;
+        font-size: 0.85rem;
+        text-align: right;
+        flex: 1;
+    }
+    
+    /* MCP suggestions */
+    .mcp-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .mcp-suggestion {
+        padding: 0.5rem 0.75rem;
+        background: #0c0c0f;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+        color: #a1a1aa;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .mcp-suggestion:hover {
+        border-color: #ff9500;
+        color: #ff9500;
+    }
+    
+    /* Small input */
+    .form-input-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    /* Tool checkboxes */
+    .tool-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: #0c0c0f;
+        border: 1px solid #27272a;
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+    }
+    .tool-checkbox input[type="checkbox"] {
+        accent-color: #ff9500;
+    }
+    .tool-checkbox label {
+        color: #a1a1aa;
+        font-size: 0.85rem;
+        font-family: monospace;
+    }
+    
+    /* Tab buttons for MCP modal */
+    .tab-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+        color: #71717a;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .tab-btn:hover {
+        background: #27272a;
+        color: #a1a1aa;
+    }
+    .tab-btn.active {
+        background: rgba(255, 149, 0, 0.1);
+        border-color: #ff9500;
+        color: #ff9500;
+    }
+    
+    /* Tab content */
+    .mcp-tab-content {
+        display: none;
+    }
+    .mcp-tab-content.active {
+        display: block;
+    }
+    
+    /* Add item button */
+    .add-item-btn {
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: 1px dashed #27272a;
+        border-radius: 6px;
+        color: #52525b;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    .add-item-btn:hover {
+        border-color: #ff9500;
+        color: #ff9500;
+    }
+    
+    /* Arg/Env item row */
+    .item-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+    .item-row input {
+        flex: 1;
+    }
+    .item-row .remove-btn {
+        padding: 0.5rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 6px;
+        color: #ef4444;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    .item-row .remove-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
+    
+    /* JSON editor */
+    .json-editor {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        background: #09090b;
+        min-height: 300px;
+    }
+    
+    /* JSON preview */
+    .json-preview {
+        background: #09090b;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+        padding: 1rem;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.75rem;
+        color: #a1a1aa;
+        overflow-x: auto;
+        max-height: 150px;
+        white-space: pre-wrap;
+    }
+    
+    /* Test result modal */
+    .test-success, .test-failure {
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    .test-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .test-message {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .test-success .test-message {
+        color: #22c55e;
+    }
+    
+    .test-failure .test-message {
+        color: #ef4444;
+    }
+    
+    .test-error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        color: #fca5a5;
+        font-size: 0.85rem;
+        margin-top: 1rem;
+        text-align: left;
+        font-family: 'Monaco', 'Menlo', monospace;
+        word-break: break-word;
+    }
+    
+    .test-hint {
+        background: rgba(234, 179, 8, 0.1);
+        border: 1px solid rgba(234, 179, 8, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        color: #fde047;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+        text-align: left;
+    }
+    
+    .modal-footer {
+        background: #111114;
+    }
+    
+    /* Inline test results */
+    .test-inline {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .test-inline.test-success {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #86efac;
+    }
+    
+    .test-inline.test-failure {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+    }
+    
+    .test-inline.test-pending {
+        background: rgba(255, 149, 0, 0.1);
+        border: 1px solid rgba(255, 149, 0, 0.3);
+        color: #ffb340;
+    }
+    
+    .test-tools {
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        color: #a1a1aa;
+    }
+    
+    .test-hint-inline {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #fde047;
+    }
+</style>
+
+<script>
+    // Job wizard state
+    let currentJobStep = 1;
+    let selectedSkill = null;
+    let mcpActiveTab = 'form';
+    
+    function openModal(type) {
+        document.getElementById('modal-add-' + type).classList.add('active');
+        if (type === 'job') {
+            currentJobStep = 1;
+            showJobStep(1);
+        }
+        if (type === 'mcp') {
+            resetMCPForm();
+        }
+    }
+    
+    function closeModal(type) {
+        document.getElementById('modal-add-' + type).classList.remove('active');
+    }
+    
+    function toggleServer(el) {
+        el.closest('.server-unit').classList.toggle('expanded');
+    }
+    
+    // Job wizard navigation
+    function nextJobStep(step) {
+        // Validate current step
+        if (currentJobStep === 1 && step === 2) {
+            const name = document.getElementById('job-name').value.trim();
+            const goal = document.getElementById('job-goal').value.trim();
+            if (!name || !goal || !selectedSkill) {
+                alert('Please fill in all required fields and select a skill');
+                return;
+            }
+        }
+        
+        // Update review section when going to step 3
+        if (step === 3) {
+            updateJobReview();
+        }
+        
+        showJobStep(step);
+    }
+    
+    function showJobStep(step) {
+        currentJobStep = step;
+        
+        // Hide all steps
+        document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.step-indicator').forEach(s => {
+            s.classList.remove('active', 'completed');
+        });
+        
+        // Show current step
+        document.getElementById('job-step-' + step).classList.add('active');
+        
+        // Update indicators
+        document.querySelectorAll('.step-indicator').forEach(s => {
+            const stepNum = parseInt(s.dataset.step);
+            if (stepNum < step) s.classList.add('completed');
+            if (stepNum === step) s.classList.add('active');
+        });
+    }
+    
+    function selectSkill(name, title) {
+        selectedSkill = name;
+        document.getElementById('job-skill').value = name;
+        
+        // Update UI
+        document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('selected'));
+        document.querySelector(`.skill-card[data-skill="${name}"]`).classList.add('selected');
+    }
+    
+    function getScheduleCron() {
+        const type = document.querySelector('input[name="schedule_type"]:checked').value;
+        const scheduleMap = {
+            'daily_morning': '0 8 * * *',
+            'daily_evening': '0 18 * * *',
+            'hourly': '0 */4 * * *',
+            'weekly': '0 9 * * 1',
+            'custom': document.getElementById('job-cron').value || '0 8 * * *'
+        };
+        return scheduleMap[type];
+    }
+    
+    function getScheduleText() {
+        const type = document.querySelector('input[name="schedule_type"]:checked').value;
+        const textMap = {
+            'daily_morning': 'Daily at 8:00 AM',
+            'daily_evening': 'Daily at 6:00 PM',
+            'hourly': 'Every 4 hours',
+            'weekly': 'Weekly (Monday 9 AM)',
+            'custom': 'Custom: ' + (document.getElementById('job-cron').value || '0 8 * * *')
+        };
+        return textMap[type];
+    }
+    
+    function updateJobReview() {
+        document.getElementById('review-job-name').textContent = document.getElementById('job-name').value;
+        document.getElementById('review-job-goal').textContent = document.getElementById('job-goal').value;
+        document.getElementById('review-job-skill').textContent = selectedSkill;
+        document.getElementById('review-job-schedule').textContent = getScheduleText();
+        
+        const notifyType = document.querySelector('input[name="notify_type"]:checked').value;
+        if (notifyType === 'discord') {
+            const channel = document.getElementById('job-discord').value;
+            document.getElementById('review-job-notify').textContent = 'Discord: ' + channel;
+        } else {
+            document.getElementById('review-job-notify').textContent = 'PAAW Chat';
+        }
+    }
+    
+    async function createJob() {
+        const btn = document.getElementById('create-job-btn');
+        const loading = document.getElementById('job-creating');
+        
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+        loading.classList.remove('hidden');
+        
+        const data = {
+            name: document.getElementById('job-name').value,
+            goal: document.getElementById('job-goal').value,
+            skill: selectedSkill,
+            schedule: getScheduleCron(),
+            notify_type: document.querySelector('input[name="notify_type"]:checked').value,
+            discord_channel: document.getElementById('job-discord').value
+        };
+        
+        try {
+            const response = await fetch('/api/server-room/jobs/create-with-llm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeModal('job');
+                document.getElementById('add-job-form').reset();
+                selectedSkill = null;
+                refreshList('jobs-list');
+                refreshList('stats-bar');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to create job'));
+            }
+        } catch (err) {
+            alert('Error creating job: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 Create Job';
+            loading.classList.add('hidden');
+        }
+    }
+    
+    // MCP Form Functions
+    function switchMCPTab(tab) {
+        mcpActiveTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.mcp-tab-content').forEach(content => content.classList.remove('active'));
+        
+        document.getElementById('mcp-tab-' + tab).classList.add('active');
+        document.getElementById('mcp-' + tab + '-tab').classList.add('active');
+        
+        updateMCPPreview();
+    }
+    
+    function resetMCPForm() {
+        // Reset form fields
+        document.getElementById('mcp-name').value = '';
+        document.getElementById('mcp-desc').value = '';
+        document.getElementById('mcp-command-type').value = 'docker';
+        document.getElementById('mcp-tools').value = '';
+        document.getElementById('mcp-enabled').checked = true;
+        document.getElementById('mcp-args-container').innerHTML = '';
+        document.getElementById('mcp-env-container').innerHTML = '';
+        document.getElementById('mcp-json-name').value = '';
+        document.getElementById('mcp-json-editor').value = '';
+        document.getElementById('mcp-custom-command-group').style.display = 'none';
+        
+        // Add default docker args
+        addMCPArg('run');
+        addMCPArg('-i');
+        addMCPArg('--rm');
+        
+        switchMCPTab('form');
+        updateMCPPreview();
+    }
+    
+    function updateMCPCommandUI() {
+        const cmdType = document.getElementById('mcp-command-type').value;
+        const customGroup = document.getElementById('mcp-custom-command-group');
+        customGroup.style.display = cmdType === 'custom' ? 'block' : 'none';
+        
+        // Reset args based on command type
+        const argsContainer = document.getElementById('mcp-args-container');
+        argsContainer.innerHTML = '';
+        
+        if (cmdType === 'docker') {
+            addMCPArg('run');
+            addMCPArg('-i');
+            addMCPArg('--rm');
+        } else if (cmdType === 'npx') {
+            addMCPArg('-y');
+        }
+        
+        updateMCPPreview();
+    }
+    
+    function addMCPArg(value = '') {
+        const container = document.getElementById('mcp-args-container');
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+            <input type="text" class="form-input form-input-sm mcp-arg" value="${value}" placeholder="argument" oninput="updateMCPPreview()">
+            <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateMCPPreview();">✕</button>
+        `;
+        container.appendChild(row);
+        updateMCPPreview();
+    }
+    
+    function addMCPEnv(key = '', value = '') {
+        const container = document.getElementById('mcp-env-container');
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+            <input type="text" class="form-input form-input-sm mcp-env-key" value="${key}" placeholder="KEY" style="flex: 0.4;" oninput="updateMCPPreview()">
+            <input type="text" class="form-input form-input-sm mcp-env-value" value="${value}" placeholder="value" oninput="updateMCPPreview()">
+            <button type="button" class="remove-btn" onclick="this.parentElement.remove(); updateMCPPreview();">✕</button>
+        `;
+        container.appendChild(row);
+        updateMCPPreview();
+    }
+    
+    function getMCPConfigFromForm() {
+        const cmdType = document.getElementById('mcp-command-type').value;
+        const command = cmdType === 'custom' 
+            ? document.getElementById('mcp-custom-command').value 
+            : cmdType;
+        
+        const args = [];
+        document.querySelectorAll('.mcp-arg').forEach(input => {
+            if (input.value.trim()) args.push(input.value.trim());
+        });
+        
+        const env = {};
+        document.querySelectorAll('.item-row').forEach(row => {
+            const keyInput = row.querySelector('.mcp-env-key');
+            const valueInput = row.querySelector('.mcp-env-value');
+            if (keyInput && valueInput && keyInput.value.trim()) {
+                env[keyInput.value.trim()] = valueInput.value;
+            }
+        });
+        
+        const toolsStr = document.getElementById('mcp-tools').value;
+        const tools = toolsStr.split(',').map(t => t.trim()).filter(t => t);
+        
+        return {
+            description: document.getElementById('mcp-desc').value || '',
+            command: command,
+            args: args,
+            env: env,
+            enabled: document.getElementById('mcp-enabled').checked,
+            tools: tools
+        };
+    }
+    
+    function updateMCPPreview() {
+        const preview = document.getElementById('mcp-preview');
+        
+        if (mcpActiveTab === 'form') {
+            const config = getMCPConfigFromForm();
+            preview.textContent = JSON.stringify(config, null, 2);
+        } else {
+            try {
+                const json = JSON.parse(document.getElementById('mcp-json-editor').value || '{}');
+                preview.textContent = JSON.stringify(json, null, 2);
+            } catch (e) {
+                preview.textContent = 'Invalid JSON: ' + e.message;
+            }
+        }
+    }
+    
+    async function saveMCP() {
+        const btn = document.getElementById('save-mcp-btn');
+        const loading = document.getElementById('mcp-saving');
+        
+        let name, config;
+        
+        if (mcpActiveTab === 'form') {
+            name = document.getElementById('mcp-name').value.trim();
+            if (!name) {
+                alert('Please enter a server name');
+                return;
+            }
+            config = getMCPConfigFromForm();
+        } else {
+            name = document.getElementById('mcp-json-name').value.trim();
+            if (!name) {
+                alert('Please enter a server name');
+                return;
+            }
+            try {
+                config = JSON.parse(document.getElementById('mcp-json-editor').value);
+            } catch (e) {
+                alert('Invalid JSON: ' + e.message);
+                return;
+            }
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        loading.classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/api/server-room/mcps/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, config })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeModal('mcp');
+                refreshList('mcp-servers-list');
+                refreshList('stats-bar');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to save MCP'));
+            }
+        } catch (err) {
+            alert('Error saving MCP: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Save MCP Server';
+            loading.classList.add('hidden');
+        }
+    }
+    
+    // Test MCP Connection
+    async function testMCPConnection(serverName, btnElement) {
+        const originalText = btnElement.textContent;
+        btnElement.disabled = true;
+        btnElement.textContent = '⏳ Testing...';
+        
+        try {
+            const response = await fetch('/api/server-room/mcps/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: serverName })
+            });
+            
+            const result = await response.json();
+            
+            showTestResult(serverName, result);
+        } catch (err) {
+            showTestResult(serverName, {
+                success: false,
+                error: err.message
+            });
+        } finally {
+            btnElement.disabled = false;
+            btnElement.textContent = originalText;
+        }
+    }
+    
+    function showTestResult(serverName, result) {
+        const modal = document.getElementById('modal-test-result');
+        const title = document.getElementById('test-result-title');
+        const content = document.getElementById('test-result-content');
+        
+        title.textContent = `Test: ${serverName}`;
+        
+        if (result.success) {
+            let toolsList = '';
+            if (result.tools && result.tools.length > 0) {
+                toolsList = `
+                    <div class="mt-4">
+                        <div class="text-sm text-zinc-400 mb-2">Available Tools (${result.tools_count}):</div>
+                        <div class="tools-list">
+                            ${result.tools.map(t => `<span class="tool-tag">${t}</span>`).join('')}
+                            ${result.has_more ? '<span class="tool-tag">...</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = `
+                <div class="test-success">
+                    <div class="test-icon">✅</div>
+                    <div class="test-message">${result.message}</div>
+                    ${toolsList}
+                </div>
+            `;
+        } else {
+            content.innerHTML = `
+                <div class="test-failure">
+                    <div class="test-icon">❌</div>
+                    <div class="test-message">Connection Failed</div>
+                    <div class="test-error">${result.error}</div>
+                    ${result.hint ? `<div class="test-hint">💡 ${result.hint}</div>` : ''}
+                </div>
+            `;
+        }
+        
+        modal.classList.add('active');
+    }
+    
+    function closeTestModal() {
+        document.getElementById('modal-test-result').classList.remove('active');
+    }
+    
+    // Test MCP config before saving
+    async function testMCPBeforeSave() {
+        const btn = document.getElementById('test-mcp-btn');
+        const resultDiv = document.getElementById('mcp-test-result');
+        
+        let name, config;
+        
+        if (mcpActiveTab === 'form') {
+            name = document.getElementById('mcp-name').value.trim() || 'test_server';
+            config = getMCPConfigFromForm();
+        } else {
+            name = document.getElementById('mcp-json-name').value.trim() || 'test_server';
+            try {
+                config = JSON.parse(document.getElementById('mcp-json-editor').value);
+            } catch (e) {
+                resultDiv.innerHTML = `
+                    <div class="test-inline test-failure">
+                        ❌ Invalid JSON: ${e.message}
+                    </div>
+                `;
+                resultDiv.classList.remove('hidden');
+                return;
+            }
+        }
+        
+        if (!config.command) {
+            resultDiv.innerHTML = `
+                <div class="test-inline test-failure">
+                    ❌ Command is required
+                </div>
+            `;
+            resultDiv.classList.remove('hidden');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Testing...';
+        resultDiv.innerHTML = `
+            <div class="test-inline test-pending">
+                <span class="animate-spin">⚙️</span> Testing connection... this may take a few seconds
+            </div>
+        `;
+        resultDiv.classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/api/server-room/mcps/test-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, config })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                let toolsInfo = '';
+                if (result.tools && result.tools.length > 0) {
+                    toolsInfo = `<div class="test-tools">Tools found: ${result.tools.join(', ')}${result.has_more ? '...' : ''}</div>`;
+                }
+                resultDiv.innerHTML = `
+                    <div class="test-inline test-success">
+                        ✅ ${result.message}
+                        ${toolsInfo}
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="test-inline test-failure">
+                        ❌ ${result.error}
+                        ${result.hint ? `<div class="test-hint-inline">💡 ${result.hint}</div>` : ''}
+                    </div>
+                `;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `
+                <div class="test-inline test-failure">
+                    ❌ Error: ${err.message}
+                </div>
+            `;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Test Connection';
+        }
+    }
+    
+    // Edit functions
+    function closeEditModal(type) {
+        document.getElementById('modal-edit-' + type).classList.remove('active');
+    }
+    
+    async function editMCP(name) {
+        try {
+            const response = await fetch(`/api/server-room/mcps/${name}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                alert('Error loading MCP: ' + data.error);
+                return;
+            }
+            
+            document.getElementById('edit-mcp-name').value = name;
+            
+            // Remove the name from config for display
+            const configCopy = {...data};
+            delete configCopy.name;
+            
+            document.getElementById('edit-mcp-json').value = JSON.stringify(configCopy, null, 2);
+            document.getElementById('modal-edit-mcp').classList.add('active');
+        } catch (err) {
+            alert('Error loading MCP: ' + err.message);
+        }
+    }
+    
+    async function saveEditMCP() {
+        const btn = document.getElementById('save-edit-mcp-btn');
+        const name = document.getElementById('edit-mcp-name').value;
+        
+        let config;
+        try {
+            config = JSON.parse(document.getElementById('edit-mcp-json').value);
+        } catch (e) {
+            alert('Invalid JSON: ' + e.message);
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        
+        try {
+            const response = await fetch('/api/server-room/mcps/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, config })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeEditModal('mcp');
+                refreshList('mcp-servers-list');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to save MCP'));
+            }
+        } catch (err) {
+            alert('Error saving MCP: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Save Changes';
+        }
+    }
+    
+    async function editSkill(name) {
+        try {
+            const response = await fetch(`/api/server-room/skills/${name}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                alert('Error loading skill: ' + data.error);
+                return;
+            }
+            
+            document.getElementById('edit-skill-name').value = name;
+            document.getElementById('edit-skill-content').value = data.raw_content || '';
+            document.getElementById('modal-edit-skill').classList.add('active');
+        } catch (err) {
+            alert('Error loading skill: ' + err.message);
+        }
+    }
+    
+    async function saveEditSkill() {
+        const btn = document.getElementById('save-edit-skill-btn');
+        const name = document.getElementById('edit-skill-name').value;
+        const content = document.getElementById('edit-skill-content').value;
+        
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        
+        try {
+            const response = await fetch(`/api/server-room/skills/${name}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeEditModal('skill');
+                refreshList('skills-list');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to save skill'));
+            }
+        } catch (err) {
+            alert('Error saving skill: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Save Changes';
+        }
+    }
+    
+    async function editJob(name) {
+        try {
+            const response = await fetch(`/api/server-room/jobs/${name}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                alert('Error loading job: ' + data.error);
+                return;
+            }
+            
+            document.getElementById('edit-job-name').value = name;
+            document.getElementById('edit-job-content').value = data.raw_content || '';
+            document.getElementById('modal-edit-job').classList.add('active');
+        } catch (err) {
+            alert('Error loading job: ' + err.message);
+        }
+    }
+    
+    async function saveEditJob() {
+        const btn = document.getElementById('save-edit-job-btn');
+        const name = document.getElementById('edit-job-name').value;
+        const content = document.getElementById('edit-job-content').value;
+        
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        
+        try {
+            const response = await fetch(`/api/server-room/jobs/${name}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeEditModal('job');
+                refreshList('jobs-list');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to save job'));
+            }
+        } catch (err) {
+            alert('Error saving job: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Save Changes';
+        }
+    }
+    
+    // MCP actions
+    async function toggleMCP(name) {
+        try {
+            await fetch(`/api/server-room/mcps/${name}/toggle`, { method: 'POST' });
+            refreshList('mcp-servers-list');
+        } catch (err) {
+            alert('Error toggling MCP: ' + err.message);
+        }
+    }
+    
+    async function deleteMCP(name) {
+        if (!confirm('Are you sure you want to remove this MCP server?')) return;
+        
+        try {
+            await fetch(`/api/server-room/mcps/${name}`, { method: 'DELETE' });
+            refreshList('mcp-servers-list');
+            refreshList('stats-bar');
+        } catch (err) {
+            alert('Error deleting MCP: ' + err.message);
+        }
+    }
+    
+    // Skill actions
+    async function deleteSkill(name) {
+        if (!confirm('Are you sure you want to delete this skill?')) return;
+        
+        try {
+            await fetch(`/api/server-room/skills/${name}`, { method: 'DELETE' });
+            refreshList('skills-list');
+            refreshList('stats-bar');
+        } catch (err) {
+            alert('Error deleting skill: ' + err.message);
+        }
+    }
+    
+    // Job actions
+    async function runJob(name) {
+        try {
+            const response = await fetch(`/api/server-room/jobs/${name}/run`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message || 'Job queued for execution');
+            }
+        } catch (err) {
+            alert('Error running job: ' + err.message);
+        }
+    }
+    
+    async function toggleJob(name) {
+        try {
+            await fetch(`/api/server-room/jobs/${name}/toggle`, { method: 'POST' });
+            refreshList('jobs-list');
+        } catch (err) {
+            alert('Error toggling job: ' + err.message);
+        }
+    }
+    
+    async function deleteJob(name) {
+        if (!confirm('Are you sure you want to delete this job?')) return;
+        
+        try {
+            await fetch(`/api/server-room/jobs/${name}`, { method: 'DELETE' });
+            refreshList('jobs-list');
+            refreshList('stats-bar');
+        } catch (err) {
+            alert('Error deleting job: ' + err.message);
+        }
+    }
+    
+    // Helper to refresh HTMX-loaded lists
+    function refreshList(elementId) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            const url = el.getAttribute('hx-get');
+            if (url) {
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        el.innerHTML = html;
+                        htmx.process(el); // Re-initialize HTMX on new content
+                    });
+            }
+        }
+    }
+    
+    // Skill functions
+    async function createSkill() {
+        const btn = document.getElementById('create-skill-btn');
+        const loading = document.getElementById('skill-creating');
+        
+        const name = document.getElementById('skill-name').value.trim();
+        const description = document.getElementById('skill-description').value.trim();
+        
+        if (!name || !description) {
+            alert('Please fill in skill name and description');
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+        loading.classList.remove('hidden');
+        
+        const tools = [];
+        document.querySelectorAll('#tool-selector input[type="checkbox"]:checked').forEach(cb => {
+            tools.push(cb.value);
+        });
+        
+        const data = {
+            name: name,
+            description: description,
+            keywords: document.getElementById('skill-keywords').value,
+            tools: tools
+        };
+        
+        try {
+            const response = await fetch('/api/server-room/skills/create-with-llm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeModal('skill');
+                document.getElementById('add-skill-form').reset();
+                refreshList('skills-list');
+                refreshList('stats-bar');
+            } else {
+                alert('Error: ' + (result.error || 'Failed to create skill'));
+            }
+        } catch (err) {
+            alert('Error creating skill: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🧠 Create Skill';
+            loading.classList.add('hidden');
+        }
+    }
+    
+    // Show/hide custom cron and discord channel
+    document.querySelectorAll('input[name="schedule_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('custom-cron-group').style.display = 
+                this.value === 'custom' ? 'block' : 'none';
+        });
+    });
+    
+    document.querySelectorAll('input[name="notify_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.getElementById('discord-channel-group').style.display = 
+                this.value === 'discord' ? 'block' : 'none';
+        });
+    });
+    
+    // Close modal on escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        }
+    });
+    
+    // Close modal on backdrop click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>

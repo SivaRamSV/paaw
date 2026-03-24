@@ -1,0 +1,62 @@
+# =============================================================================
+# PAAW Default Configuration
+# =============================================================================
+# These are sensible defaults. Override in environment variables or .env file.
+# =============================================================================
+
+app:
+  name: PAAW
+  debug: false
+  log_level: INFO
+
+# LLM Configuration
+llm:
+  # Default model for simple tasks (fast, cheap)
+  default_model: gpt-4o-mini
+  
+  # Model for complex reasoning tasks
+  reasoning_model: claude-sonnet-4-20250514
+  
+  # Model for embeddings (semantic search)
+  embedding_model: text-embedding-3-small
+  
+  # Generation settings
+  max_tokens: 4096
+  temperature: 0.7
+  timeout: 60
+
+# Memory settings
+memory:
+  # How much memory strength decays per cycle (0.99 = 1% decay)
+  decay_rate: 0.99
+  
+  # Days before memory starts decaying
+  decay_days: 7
+  
+  # Max tokens for context window per goal
+  context_max_tokens: 4000
+  
+  # Number of recent conversations to keep in full
+  recent_conversations_count: 5
+
+# Web server
+web:
+  host: "0.0.0.0"
+  port: 8080
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+
+# Heartbeat settings
+heartbeat:
+  interval_seconds: 30
+  unhealthy_threshold: 3
+
+# Scheduler settings
+scheduler:
+  # Memory maintenance
+  memory_decay_cron: "0 * * * *"      # Every hour
+  memory_consolidate_cron: "0 3 * * *" # Daily at 3am
+  
+  # User features
+  reminder_check_cron: "* * * * *"     # Every minute

@@ -1,0 +1,1008 @@
+<!-- Graph Panel: Mental Model Visualization - Futuristic Neural Universe -->
+<div class="flex flex-col h-full" x-data="{ selectedNode: null, viewMode: '2d' }">
+    <!-- Header with View Controls -->
+    <div class="p-3 border-b border-navy-700 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900">
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="text-teal-400 font-semibold text-sm flex items-center gap-2">
+                <span class="text-lg animate-pulse">🧠</span> 
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-400 to-purple-400">Neural Universe</span>
+            </h2>
+            <div class="flex gap-1">
+                <button onclick="window.graphManager?.toggleView()" 
+                        class="px-2 py-1 rounded text-xs bg-navy-700 text-cyan-400 hover:bg-cyan-400 hover:text-navy-900 transition-all">
+                    ⚡ Toggle View
+                </button>
+                <button onclick="window.graphManager?.refresh()" 
+                        class="px-2 py-1 rounded text-xs bg-navy-700 text-teal-400 hover:bg-teal-400 hover:text-navy-900 transition-all">
+                    🔄
+                </button>
+            </div>
+        </div>
+        <input type="text" 
+               placeholder="🔍 Search the neural network..." 
+               class="w-full p-2 bg-navy-900/80 border border-cyan-900 rounded-lg text-sm text-slate-200 placeholder-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 transition-all"
+               id="graph-search"
+               oninput="window.graphManager?.search(this.value)"/>
+    </div>
+    
+    <!-- Graph Canvas - Neural Universe -->
+    <div id="graph-container" class="relative overflow-hidden" style="height: 350px; min-height: 350px; background: radial-gradient(ellipse at center, #0d1b2a 0%, #020c1b 70%, #000 100%);">
+        <!-- Star field background -->
+        <canvas id="stars-canvas" class="absolute inset-0 pointer-events-none" style="opacity: 0.4;"></canvas>
+        
+        <!-- Main graph -->
+        <svg id="graph-svg" width="100%" height="100%"></svg>
+        
+        <!-- Glow overlay -->
+        <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.5) 100%);"></div>
+        
+        <!-- Loading indicator -->
+        <div id="graph-loading" class="absolute inset-0 flex items-center justify-center bg-navy-900/90 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-3">
+                <div class="relative">
+                    <div class="w-12 h-12 border-2 border-cyan-400/30 rounded-full animate-ping"></div>
+                    <div class="absolute inset-0 w-12 h-12 border-2 border-t-cyan-400 rounded-full animate-spin"></div>
+                </div>
+                <div class="text-cyan-400 text-sm animate-pulse">Mapping neural pathways...</div>
+            </div>
+        </div>
+        
+        <!-- Error message -->
+        <div id="graph-error" class="absolute inset-0 flex items-center justify-center bg-navy-900/90 hidden">
+            <div class="text-red-400 text-sm flex items-center gap-2">
+                <span class="text-xl">⚠️</span> Neural link disconnected
+            </div>
+        </div>
+    </div>
+    
+    <!-- Node Type Legend - Futuristic Pills -->
+    <div class="p-3 border-t border-cyan-900/50 bg-navy-900/50">
+        <div class="text-xs text-cyan-400/70 mb-2 flex items-center gap-1">
+            <span>⚛️</span> Neural Clusters
+        </div>
+        <div class="flex flex-wrap gap-1" id="filter-buttons">
+            <button onclick="window.graphManager?.filter('all')" data-filter="all"
+                    class="filter-btn active px-2 py-1 rounded-full text-xs bg-gradient-to-r from-cyan-500 to-teal-500 text-navy-900 font-medium shadow-lg shadow-cyan-500/30 transition-all hover:scale-105">
+                ✨ All
+            </button>
+            <button onclick="window.graphManager?.filter('User')" data-filter="User"
+                    class="filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500 hover:text-navy-900 transition-all hover:scale-105">
+                👤 Core
+            </button>
+            <button onclick="window.graphManager?.filter('Person')" data-filter="Person"
+                    class="filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-orange-300 border border-orange-500/30 hover:bg-orange-500 hover:text-navy-900 transition-all hover:scale-105">
+                👥 Entities
+            </button>
+            <button onclick="window.graphManager?.filter('Skill')" data-filter="Skill"
+                    class="filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-yellow-300 border border-yellow-500/30 hover:bg-yellow-500 hover:text-navy-900 transition-all hover:scale-105">
+                ⚡ Skills
+            </button>
+            <button onclick="window.graphManager?.filter('Job')" data-filter="Job"
+                    class="filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-blue-300 border border-blue-500/30 hover:bg-blue-500 hover:text-navy-900 transition-all hover:scale-105">
+                🔧 Jobs
+            </button>
+            <button onclick="window.graphManager?.filter('Memory')" data-filter="Memory"
+                    class="filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-purple-300 border border-purple-500/30 hover:bg-purple-500 hover:text-navy-900 transition-all hover:scale-105">
+                💫 Memories
+            </button>
+            <button onclick="window.graphManager?.filter('Conversation')" data-filter="Conversation"
+                    class="filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-pink-300 border border-pink-500/30 hover:bg-pink-500 hover:text-navy-900 transition-all hover:scale-105">
+                💬 Convos
+            </button>
+        </div>
+    </div>
+    
+    <!-- Node Details - Holographic Card -->
+    <div id="node-details" class="p-3 border-t border-cyan-900/50 flex-1 overflow-y-auto bg-gradient-to-b from-navy-900/50 to-transparent">
+        <div class="text-xs text-cyan-400/50 italic flex items-center gap-2">
+            <span class="animate-pulse">◉</span> Select a neuron to analyze
+        </div>
+    </div>
+    
+    <!-- Stats - Futuristic Display -->
+    <div class="p-3 border-t border-cyan-900/50 bg-navy-900/80"
+         hx-get="/htmx/graph/stats"
+         hx-trigger="load, every 30s"
+         hx-swap="innerHTML">
+        <div class="flex items-center justify-center gap-2 text-xs text-cyan-400/70">
+            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+            Syncing neural map...
+        </div>
+    </div>
+</div>
+
+<style>
+/* Futuristic Graph Styles */
+@keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 3px currentColor); }
+    50% { filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px currentColor); }
+}
+
+@keyframes flow {
+    0% { stroke-dashoffset: 30; }
+    100% { stroke-dashoffset: 0; }
+}
+
+@keyframes orbit {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.node-core {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.edge-flow {
+    stroke-dasharray: 5 5;
+    animation: flow 1s linear infinite;
+}
+
+.node-ring {
+    animation: orbit 8s linear infinite;
+    transform-origin: center;
+}
+
+/* Scrollbar styling */
+#node-details::-webkit-scrollbar {
+    width: 4px;
+}
+#node-details::-webkit-scrollbar-track {
+    background: rgba(6, 182, 212, 0.1);
+}
+#node-details::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.3);
+    border-radius: 4px;
+}
+</style>
+
+<script>
+// Futuristic Neural Universe Graph Manager
+class GraphManager {
+    constructor() {
+        this.container = document.getElementById('graph-container');
+        this.svg = d3.select('#graph-svg');
+        this.nodes = [];
+        this.links = [];
+        this.simulation = null;
+        this.activeFilter = 'all';
+        this.searchTerm = '';
+        this.viewMode = 'neural'; // 'neural' or 'force'
+        
+        // Futuristic color palette with glow effects
+        this.colors = {
+            'User': { fill: '#06d6a0', glow: '#06d6a0', ring: '#00ffcc' },
+            'Assistant': { fill: '#f72585', glow: '#f72585', ring: '#ff69b4' },
+            'Skill': { fill: '#ffd60a', glow: '#ffd60a', ring: '#ffea00' },
+            'Job': { fill: '#4cc9f0', glow: '#4cc9f0', ring: '#00d4ff' },
+            'Memory': { fill: '#b388ff', glow: '#9d4edd', ring: '#e040fb' },
+            'Goal': { fill: '#7ae582', glow: '#57cc99', ring: '#80ed99' },
+            'Person': { fill: '#ff9f43', glow: '#ff7f50', ring: '#ffa94d' },
+            'Domain': { fill: '#ff6b6b', glow: '#ee5a5a', ring: '#ff8787' },
+            'Trail': { fill: '#4a5568', glow: '#718096', ring: '#a0aec0' },
+            'Conversation': { fill: '#f687b3', glow: '#ed64a6', ring: '#fbb6ce' },
+            'MCP_Server': { fill: '#68d391', glow: '#48bb78', ring: '#9ae6b4' },
+            'default': { fill: '#64ffda', glow: '#5eead4', ring: '#99f6e4' }
+        };
+        
+        // Node sizes by importance
+        this.nodeSizes = {
+            'User': 18,
+            'Assistant': 16,
+            'Conversation': 12,
+            'Skill': 10,
+            'Job': 10,
+            'Domain': 9,
+            'Person': 9,
+            'Goal': 8,
+            'Memory': 6,
+            'Trail': 5,
+            'MCP_Server': 8,
+            'default': 7
+        };
+        
+        this.init();
+        this.initStarField();
+    }
+    
+    initStarField() {
+        const canvas = document.getElementById('stars-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        canvas.width = this.container.clientWidth;
+        canvas.height = this.container.clientHeight;
+        
+        // Create stars
+        const stars = [];
+        for (let i = 0; i < 100; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5,
+                opacity: Math.random() * 0.8 + 0.2,
+                twinkleSpeed: Math.random() * 0.02 + 0.01
+            });
+        }
+        
+        // Animate stars
+        const animateStars = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            stars.forEach(star => {
+                star.opacity += star.twinkleSpeed;
+                if (star.opacity > 1 || star.opacity < 0.2) {
+                    star.twinkleSpeed *= -1;
+                }
+                
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 255, 218, ${star.opacity})`;
+                ctx.fill();
+            });
+            
+            requestAnimationFrame(animateStars);
+        };
+        
+        animateStars();
+    }
+    
+    async init() {
+        try {
+            await this.loadData();
+            this.setupGraph();
+            this.hideLoading();
+        } catch (e) {
+            console.error('Graph init failed:', e);
+            this.showError();
+        }
+    }
+    
+    async loadData() {
+        const response = await fetch('/api/graph');
+        const data = await response.json();
+        this.nodes = data.nodes || [];
+        this.links = data.edges || [];
+    }
+    
+    setupGraph() {
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight || 350;
+        
+        // Clear
+        this.svg.selectAll('*').remove();
+        
+        // Defs for gradients and filters
+        const defs = this.svg.append('defs');
+        
+        // Glow filter
+        const glowFilter = defs.append('filter')
+            .attr('id', 'glow')
+            .attr('x', '-50%').attr('y', '-50%')
+            .attr('width', '200%').attr('height', '200%');
+        glowFilter.append('feGaussianBlur')
+            .attr('stdDeviation', '3')
+            .attr('result', 'coloredBlur');
+        const feMerge = glowFilter.append('feMerge');
+        feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+        feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+        
+        // Create gradients for each node type
+        Object.entries(this.colors).forEach(([type, colors]) => {
+            const gradient = defs.append('radialGradient')
+                .attr('id', `gradient-${type}`)
+                .attr('cx', '30%').attr('cy', '30%');
+            gradient.append('stop')
+                .attr('offset', '0%')
+                .attr('stop-color', '#fff')
+                .attr('stop-opacity', 0.8);
+            gradient.append('stop')
+                .attr('offset', '50%')
+                .attr('stop-color', colors.fill);
+            gradient.append('stop')
+                .attr('offset', '100%')
+                .attr('stop-color', colors.glow)
+                .attr('stop-opacity', 0.6);
+        });
+        
+        // Arrow marker with glow
+        defs.append('marker')
+            .attr('id', 'arrow-glow')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 25)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', '#06b6d4')
+            .attr('opacity', 0.7);
+        
+        // Setup zoom
+        const g = this.svg.append('g');
+        this.svg.call(d3.zoom()
+            .scaleExtent([0.2, 5])
+            .on('zoom', (e) => g.attr('transform', e.transform)));
+        
+        // Filter nodes
+        const visibleNodes = this.getVisibleNodes();
+        const visibleIds = new Set(visibleNodes.map(n => n.id));
+        const visibleLinks = this.links.filter(l => 
+            visibleIds.has(l.source?.id || l.source) && visibleIds.has(l.target?.id || l.target)
+        );
+        
+        // Neural layout - arrange by type in concentric circles
+        if (this.viewMode === 'neural') {
+            this.arrangeNeuralLayout(visibleNodes, width, height);
+        }
+        
+        // Simulation
+        this.simulation = d3.forceSimulation(visibleNodes)
+            .force('link', d3.forceLink(visibleLinks).id(d => d.id).distance(80).strength(0.5))
+            .force('charge', d3.forceManyBody().strength(-200))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => this.getNodeSize(d) + 10));
+        
+        // Links with animated flow
+        const linkGroup = g.append('g').attr('class', 'links');
+        
+        // Link shadows
+        linkGroup.selectAll('line.shadow')
+            .data(visibleLinks)
+            .join('line')
+            .attr('class', 'shadow')
+            .attr('stroke', '#06b6d4')
+            .attr('stroke-width', 4)
+            .attr('stroke-opacity', 0.1)
+            .attr('filter', 'url(#glow)');
+        
+        // Main links
+        const link = linkGroup.selectAll('line.main')
+            .data(visibleLinks)
+            .join('line')
+            .attr('class', 'main edge-flow')
+            .attr('stroke', '#0ea5e9')
+            .attr('stroke-width', 1.5)
+            .attr('stroke-opacity', 0.6)
+            .attr('marker-end', 'url(#arrow-glow)');
+        
+        // Node groups
+        const nodeGroup = g.append('g').attr('class', 'nodes');
+        const node = nodeGroup.selectAll('g.node')
+            .data(visibleNodes)
+            .join('g')
+            .attr('class', 'node')
+            .style('cursor', 'pointer')
+            .call(this.drag())
+            .on('click', (e, d) => this.showNodeDetails(d));
+        
+        // Outer ring (orbit effect)
+        node.append('circle')
+            .attr('class', 'node-ring')
+            .attr('r', d => this.getNodeSize(d) + 6)
+            .attr('fill', 'none')
+            .attr('stroke', d => this.getColor(d.type).ring)
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', '3 3')
+            .attr('opacity', 0.4);
+        
+        // Glow background
+        node.append('circle')
+            .attr('class', 'node-glow')
+            .attr('r', d => this.getNodeSize(d) + 3)
+            .attr('fill', d => this.getColor(d.type).glow)
+            .attr('opacity', 0.3)
+            .attr('filter', 'url(#glow)');
+        
+        // Main node
+        node.append('circle')
+            .attr('class', 'node-core')
+            .attr('r', d => this.getNodeSize(d))
+            .attr('fill', d => `url(#gradient-${this.colors[d.type] ? d.type : 'default'})`)
+            .attr('stroke', d => this.getColor(d.type).ring)
+            .attr('stroke-width', 2);
+        
+        // Inner highlight
+        node.append('circle')
+            .attr('r', d => this.getNodeSize(d) * 0.3)
+            .attr('fill', '#fff')
+            .attr('opacity', 0.4)
+            .attr('cx', d => -this.getNodeSize(d) * 0.2)
+            .attr('cy', d => -this.getNodeSize(d) * 0.2);
+        
+        // Type icon (emoji)
+        node.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('font-size', d => Math.max(8, this.getNodeSize(d) * 0.8))
+            .text(d => this.getTypeEmoji(d.type));
+        
+        // Labels
+        const label = g.append('g')
+            .selectAll('text')
+            .data(visibleNodes.filter(n => n.type !== 'Memory' && n.type !== 'Trail'))
+            .join('text')
+            .attr('font-size', '9px')
+            .attr('fill', '#e2e8f0')
+            .attr('text-anchor', 'middle')
+            .attr('dy', d => this.getNodeSize(d) + 14)
+            .attr('filter', 'url(#glow)')
+            .text(d => this.truncateLabel(d.label || d.id, 12));
+        
+        // Edge labels (relationship type)
+        const edgeLabels = g.append('g')
+            .selectAll('text')
+            .data(visibleLinks)
+            .join('text')
+            .attr('font-size', '7px')
+            .attr('fill', '#64748b')
+            .attr('text-anchor', 'middle')
+            .attr('opacity', 0.6)
+            .text(d => this.formatEdgeType(d.type));
+        
+        // Tick
+        const linkShadows = linkGroup.selectAll('line.shadow');
+        this.simulation.on('tick', () => {
+            linkShadows
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+            
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+            
+            node.attr('transform', d => `translate(${d.x}, ${d.y})`);
+            label.attr('x', d => d.x).attr('y', d => d.y);
+            
+            edgeLabels
+                .attr('x', d => (d.source.x + d.target.x) / 2)
+                .attr('y', d => (d.source.y + d.target.y) / 2);
+        });
+        
+        // Hover effects
+        node.on('mouseover', function(e, d) {
+            d3.select(this).select('.node-glow')
+                .transition().duration(200)
+                .attr('r', self.getNodeSize(d) + 8)
+                .attr('opacity', 0.6);
+            d3.select(this).select('.node-ring')
+                .transition().duration(200)
+                .attr('opacity', 0.8);
+        }).on('mouseout', function(e, d) {
+            d3.select(this).select('.node-glow')
+                .transition().duration(200)
+                .attr('r', self.getNodeSize(d) + 3)
+                .attr('opacity', 0.3);
+            d3.select(this).select('.node-ring')
+                .transition().duration(200)
+                .attr('opacity', 0.4);
+        });
+        
+        const self = this;
+    }
+    
+    arrangeNeuralLayout(nodes, width, height) {
+        const center = { x: width / 2, y: height / 2 };
+        const typeOrder = ['User', 'Assistant', 'Conversation', 'Domain', 'Skill', 'Job', 'Person', 'Goal', 'Memory', 'Trail'];
+        
+        const byType = {};
+        nodes.forEach(n => {
+            const t = n.type || 'default';
+            if (!byType[t]) byType[t] = [];
+            byType[t].push(n);
+        });
+        
+        let ringIndex = 0;
+        typeOrder.forEach(type => {
+            const typeNodes = byType[type] || [];
+            if (typeNodes.length === 0) return;
+            
+            const radius = 40 + ringIndex * 50;
+            const angleStep = (2 * Math.PI) / Math.max(typeNodes.length, 1);
+            
+            typeNodes.forEach((n, i) => {
+                const angle = angleStep * i - Math.PI / 2;
+                n.x = center.x + radius * Math.cos(angle);
+                n.y = center.y + radius * Math.sin(angle);
+            });
+            
+            ringIndex++;
+        });
+    }
+    
+    getNodeSize(node) {
+        return this.nodeSizes[node.type] || this.nodeSizes.default;
+    }
+    
+    getColor(type) {
+        return this.colors[type] || this.colors.default;
+    }
+    
+    getTypeEmoji(type) {
+        const emojis = {
+            'User': '👤',
+            'Assistant': '🤖',
+            'Skill': '⚡',
+            'Job': '⚙️',
+            'Memory': '💭',
+            'Goal': '🎯',
+            'Person': '👥',
+            'Domain': '🌐',
+            'Trail': '📍',
+            'Conversation': '💬',
+            'MCP_Server': '🔌'
+        };
+        return emojis[type] || '◉';
+    }
+    
+    truncateLabel(label, maxLen) {
+        if (!label) return '';
+        return label.length > maxLen ? label.substring(0, maxLen) + '...' : label;
+    }
+    
+    formatEdgeType(type) {
+        if (!type) return '';
+        return type.replace(/_/g, ' ').toLowerCase();
+    }
+    
+    getVisibleNodes() {
+        let nodes = this.nodes;
+        
+        if (this.activeFilter !== 'all') {
+            nodes = nodes.filter(n => n.type === this.activeFilter);
+        }
+        
+        if (this.searchTerm) {
+            const term = this.searchTerm.toLowerCase();
+            nodes = nodes.filter(n => 
+                n.label?.toLowerCase().includes(term) ||
+                n.id?.toLowerCase().includes(term) ||
+                n.context?.toLowerCase().includes(term)
+            );
+        }
+        
+        return nodes;
+    }
+    
+    drag() {
+        return d3.drag()
+            .on('start', (e, d) => {
+                if (!e.active) this.simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            })
+            .on('drag', (e, d) => {
+                d.fx = e.x;
+                d.fy = e.y;
+            })
+            .on('end', (e, d) => {
+                if (!e.active) this.simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            });
+    }
+    
+    toggleView() {
+        this.viewMode = this.viewMode === 'neural' ? 'force' : 'neural';
+        this.setupGraph();
+    }
+    
+    filter(type) {
+        this.activeFilter = type;
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter === type) {
+                btn.className = 'filter-btn active px-2 py-1 rounded-full text-xs bg-gradient-to-r from-cyan-500 to-teal-500 text-navy-900 font-medium shadow-lg shadow-cyan-500/30 transition-all hover:scale-105';
+            } else {
+                const typeColors = {
+                    'all': 'cyan', 'User': 'cyan', 'Person': 'orange', 'Skill': 'yellow',
+                    'Job': 'blue', 'Memory': 'purple', 'Conversation': 'pink'
+                };
+                const color = typeColors[btn.dataset.filter] || 'cyan';
+                btn.className = `filter-btn px-2 py-1 rounded-full text-xs bg-navy-800 text-${color}-300 border border-${color}-500/30 hover:bg-${color}-500 hover:text-navy-900 transition-all hover:scale-105`;
+            }
+        });
+        
+        this.setupGraph();
+    }
+    
+    search(term) {
+        this.searchTerm = term;
+        this.setupGraph();
+    }
+    
+    showNodeDetails(node) {
+        const detailsDiv = document.getElementById('node-details');
+        const colors = this.getColor(node.type);
+        
+        detailsDiv.innerHTML = `
+            <div class="space-y-3 animate-fadeIn">
+                <!-- Header -->
+                <div class="flex items-center gap-3 pb-2 border-b border-cyan-900/30">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                             style="background: linear-gradient(135deg, ${colors.fill}, ${colors.glow}); box-shadow: 0 0 15px ${colors.glow}40;">
+                            ${this.getTypeEmoji(node.type)}
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-navy-800 rounded-full flex items-center justify-center">
+                            <div class="w-2 h-2 rounded-full animate-pulse" style="background: ${colors.fill}"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-sm" style="color: ${colors.fill}">${node.label || node.id}</div>
+                        <div class="text-xs text-slate-500">${node.type} • ${node.id}</div>
+                    </div>
+                </div>
+                
+                <!-- Context -->
+                ${node.context ? `
+                    <div class="p-2 bg-navy-800/50 rounded-lg border border-cyan-900/30">
+                        <div class="text-xs text-cyan-400/70 mb-1 flex items-center gap-1">
+                            <span>📝</span> Context
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed">${node.context}</div>
+                    </div>
+                ` : ''}
+                
+                <!-- Key Facts -->
+                ${node.key_facts?.length ? `
+                    <div>
+                        <div class="text-xs text-cyan-400/70 mb-2 flex items-center gap-1">
+                            <span>💡</span> Key Insights
+                        </div>
+                        <div class="space-y-1">
+                            ${node.key_facts.slice(0, 5).map(f => `
+                                <div class="flex items-start gap-2 text-xs">
+                                    <span class="text-cyan-400 mt-0.5">▸</span>
+                                    <span class="text-slate-400">${f}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <!-- Actions -->
+                <div class="pt-2 border-t border-cyan-900/30 flex gap-2">
+                    <button onclick="window.graphManager?.expandNode('${node.id}')"
+                            class="flex-1 px-2 py-1 rounded text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-all">
+                        🔍 Explore
+                    </button>
+                    <button onclick="window.graphManager?.highlightConnections('${node.id}')"
+                            class="flex-1 px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-all">
+                        🔗 Connections
+                    </button>
+                </div>
+            </div>
+            <style>
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+            </style>
+        `;
+    }
+    
+    expandNode(nodeId) {
+        // Focus on this node and show its connections
+        this.filter('all');
+        const node = this.nodes.find(n => n.id === nodeId);
+        if (node) {
+            // Center on the node
+            const transform = d3.zoomIdentity
+                .translate(this.container.clientWidth / 2, this.container.clientHeight / 2)
+                .scale(1.5)
+                .translate(-node.x, -node.y);
+            this.svg.transition().duration(500).call(
+                d3.zoom().transform,
+                transform
+            );
+        }
+    }
+    
+    highlightConnections(nodeId) {
+        const connectedIds = new Set([nodeId]);
+        this.links.forEach(l => {
+            const sourceId = l.source?.id || l.source;
+            const targetId = l.target?.id || l.target;
+            if (sourceId === nodeId) connectedIds.add(targetId);
+            if (targetId === nodeId) connectedIds.add(sourceId);
+        });
+        
+        // Highlight nodes
+        this.svg.selectAll('.node')
+            .transition().duration(300)
+            .style('opacity', d => connectedIds.has(d.id) ? 1 : 0.2);
+        
+        // Highlight links
+        this.svg.selectAll('.links line')
+            .transition().duration(300)
+            .style('opacity', d => {
+                const sourceId = d.source?.id || d.source;
+                const targetId = d.target?.id || d.target;
+                return connectedIds.has(sourceId) && connectedIds.has(targetId) ? 1 : 0.1;
+            });
+        
+        // Reset after 3 seconds
+        setTimeout(() => {
+            this.svg.selectAll('.node').transition().duration(300).style('opacity', 1);
+            this.svg.selectAll('.links line').transition().duration(300).style('opacity', 0.6);
+        }, 3000);
+    }
+    
+    highlightNodes(nodeIds) {
+        this.svg.selectAll('.node')
+            .transition().duration(300)
+            .style('opacity', d => nodeIds.includes(d.id) ? 1 : 0.3);
+        
+        setTimeout(() => {
+            this.svg.selectAll('.node').transition().duration(300).style('opacity', 1);
+        }, 3000);
+    }
+    
+    async refresh() {
+        try {
+            await this.loadData();
+            this.setupGraph();
+            console.log('Neural map refreshed:', this.nodes.length, 'neurons');
+        } catch (e) {
+            console.error('Neural map refresh failed:', e);
+        }
+    }
+    
+    hideLoading() {
+        document.getElementById('graph-loading').style.display = 'none';
+    }
+    
+    showError() {
+        document.getElementById('graph-loading').style.display = 'none';
+        document.getElementById('graph-error').classList.remove('hidden');
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.graphManager = new GraphManager();
+});
+</script>
+    
+    async init() {
+        try {
+            await this.loadData();
+            this.setupGraph();
+            this.hideLoading();
+        } catch (e) {
+            console.error('Graph init failed:', e);
+            this.showError();
+        }
+    }
+    
+    async loadData() {
+        const response = await fetch('/api/graph');
+        const data = await response.json();
+        this.nodes = data.nodes || [];
+        this.links = data.edges || [];
+    }
+    
+    setupGraph() {
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight || 300;
+        
+        // Clear
+        this.svg.selectAll('*').remove();
+        
+        // Setup zoom
+        const g = this.svg.append('g');
+        this.svg.call(d3.zoom()
+            .scaleExtent([0.2, 4])
+            .on('zoom', (e) => g.attr('transform', e.transform)));
+        
+        // Arrow marker
+        this.svg.append('defs').append('marker')
+            .attr('id', 'arrow')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 20)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', '#1d3557');
+        
+        // Filter nodes
+        const visibleNodes = this.getVisibleNodes();
+        const visibleIds = new Set(visibleNodes.map(n => n.id));
+        const visibleLinks = this.links.filter(l => 
+            visibleIds.has(l.source) && visibleIds.has(l.target)
+        );
+        
+        // Simulation
+        this.simulation = d3.forceSimulation(visibleNodes)
+            .force('link', d3.forceLink(visibleLinks).id(d => d.id).distance(60))
+            .force('charge', d3.forceManyBody().strength(-150))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(25));
+        
+        // Links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(visibleLinks)
+            .join('line')
+            .attr('stroke', '#1d3557')
+            .attr('stroke-width', 1)
+            .attr('marker-end', 'url(#arrow)');
+        
+        // Nodes
+        const node = g.append('g')
+            .selectAll('circle')
+            .data(visibleNodes)
+            .join('circle')
+            .attr('r', d => d.type === 'User' ? 12 : d.type === 'Memory' ? 5 : 8)
+            .attr('fill', d => this.colors[d.type] || this.colors.default)
+            .attr('stroke', '#0a192f')
+            .attr('stroke-width', 2)
+            .style('cursor', 'pointer')
+            .call(this.drag())
+            .on('click', (e, d) => this.showNodeDetails(d))
+            .on('mouseover', function() { d3.select(this).attr('r', d => (d.type === 'Memory' ? 7 : 12)); })
+            .on('mouseout', function(e, d) { d3.select(this).attr('r', d.type === 'User' ? 12 : d.type === 'Memory' ? 5 : 8); });
+        
+        // Labels (only for non-Memory nodes to reduce clutter)
+        const label = g.append('g')
+            .selectAll('text')
+            .data(visibleNodes.filter(n => n.type !== 'Memory' && n.type !== 'Trail'))
+            .join('text')
+            .attr('font-size', '9px')
+            .attr('fill', '#ccd6f6')
+            .attr('text-anchor', 'middle')
+            .attr('dy', 20)
+            .text(d => d.label?.substring(0, 15) || d.id.substring(0, 15));
+        
+        // Tick
+        this.simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+            
+            node
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y);
+            
+            label
+                .attr('x', d => d.x)
+                .attr('y', d => d.y);
+        });
+    }
+    
+    getVisibleNodes() {
+        let nodes = this.nodes;
+        
+        // Filter by type
+        if (this.activeFilter !== 'all') {
+            nodes = nodes.filter(n => n.type === this.activeFilter);
+        }
+        
+        // Filter by search
+        if (this.searchTerm) {
+            const term = this.searchTerm.toLowerCase();
+            nodes = nodes.filter(n => 
+                n.label?.toLowerCase().includes(term) ||
+                n.id?.toLowerCase().includes(term) ||
+                n.context?.toLowerCase().includes(term)
+            );
+        }
+        
+        return nodes;
+    }
+    
+    drag() {
+        return d3.drag()
+            .on('start', (e, d) => {
+                if (!e.active) this.simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            })
+            .on('drag', (e, d) => {
+                d.fx = e.x;
+                d.fy = e.y;
+            })
+            .on('end', (e, d) => {
+                if (!e.active) this.simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            });
+    }
+    
+    filter(type) {
+        this.activeFilter = type;
+        
+        // Update button styles
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if (btn.dataset.filter === type) {
+                btn.className = 'filter-btn active px-2 py-1 rounded text-xs bg-teal-400 text-navy-900';
+            } else {
+                btn.className = 'filter-btn px-2 py-1 rounded text-xs bg-navy-700 text-slate-300 hover:bg-teal-400 hover:text-navy-900';
+            }
+        });
+        
+        this.setupGraph();
+    }
+    
+    search(term) {
+        this.searchTerm = term;
+        this.setupGraph();
+    }
+    
+    showNodeDetails(node) {
+        const detailsDiv = document.getElementById('node-details');
+        const typeColor = this.colors[node.type] || this.colors.default;
+        
+        detailsDiv.innerHTML = `
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full" style="background: ${typeColor}"></span>
+                    <span class="font-semibold text-teal-400">${node.label || node.id}</span>
+                </div>
+                <div class="text-xs text-slate-400">${node.type}</div>
+                ${node.context ? `<div class="text-xs text-slate-300 mt-2">${node.context.substring(0, 200)}${node.context.length > 200 ? '...' : ''}</div>` : ''}
+                ${node.key_facts?.length ? `
+                    <div class="mt-2">
+                        <div class="text-xs text-slate-500 mb-1">Key Facts:</div>
+                        <ul class="text-xs text-slate-400 list-disc list-inside">
+                            ${node.key_facts.slice(0, 3).map(f => `<li>${f.substring(0, 50)}...</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    highlightNodes(nodeIds) {
+        // Highlight specific nodes (called from chat)
+        this.svg.selectAll('circle')
+            .transition()
+            .duration(300)
+            .attr('r', d => nodeIds.includes(d.id) ? 16 : (d.type === 'Memory' ? 5 : 8))
+            .attr('stroke', d => nodeIds.includes(d.id) ? '#fff' : '#0a192f')
+            .attr('stroke-width', d => nodeIds.includes(d.id) ? 3 : 2);
+        
+        setTimeout(() => {
+            this.svg.selectAll('circle')
+                .transition()
+                .duration(300)
+                .attr('r', d => d.type === 'User' ? 12 : d.type === 'Memory' ? 5 : 8)
+                .attr('stroke', '#0a192f')
+                .attr('stroke-width', 2);
+        }, 3000);
+    }
+    
+    async refresh() {
+        // Reload data and redraw graph (called after chat messages)
+        try {
+            await this.loadData();
+            this.setupGraph();
+            console.log('Graph refreshed:', this.nodes.length, 'nodes');
+        } catch (e) {
+            console.error('Graph refresh failed:', e);
+        }
+    }
+    
+    hideLoading() {
+        document.getElementById('graph-loading').style.display = 'none';
+    }
+    
+    showError() {
+        document.getElementById('graph-loading').style.display = 'none';
+        document.getElementById('graph-error').classList.remove('hidden');
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.graphManager = new GraphManager();
+});
+</script>
