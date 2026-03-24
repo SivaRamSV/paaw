@@ -13,27 +13,32 @@
 
 Not just chat. Not just memory. PAAW connects people, work, and context — so it actually understands what you mean over time.
 
-- **Remembers conversations from weeks ago** — total recall across every interaction
-- **Connects context across projects, people, and tasks** — mention a name and everything related surfaces
-- **Executes tasks predictably** — no random agent behavior, no runaway token costs
+- **Remembers** conversations from weeks ago
+- **Connects** context across projects, people, and tasks
+- **Executes** tasks predictably — no random agent behavior
 
 **Website**: [paaw.online](https://paaw.online)
 
-## Why PAAW?
+---
 
-LLMs are probabilistic systems. When you give an autonomous agent a vague goal and let it figure things out in a sandbox, you get unpredictable behavior and runaway token costs. A simple "monitor my investments" task can spiral into dozens of API calls, hallucinated actions, and surprising results.
+### What this means in practice
 
-PAAW takes a different approach: **you define the patterns, PAAW executes them.**
+- **Never repeat yourself.** PAAW traverses the graph to pull in related context — people, projects, deadlines, past decisions — so you never start a conversation from zero.
+- **Nothing is forgotten.** Every conversation, every entity, every fact is stored in the graph and retrievable at any point.
+- **Same brain, any channel.** Web UI, CLI, or Discord on your phone — PAAW carries the same context regardless of where you talk to it.
+- **Connections compound.** The more you use PAAW, the richer the graph gets. Relationships between entities surface naturally over time.
 
-- **Skills** describe *how* to do something (in plain English)
-- **Jobs** describe *what* to do, *when* to run, and *where* to notify
-- **Tools** are the capabilities PAAW can use (web search, Discord, any MCP server)
+| Dark Mode | Light Mode |
+|-----------|------------|
+| ![Mental Model Dark](docs/images/mental-model-dark.png) | ![Mental Model Light](docs/images/mental-model-light.png) |
 
-By narrowing the probability space with specific definitions, you get predictable, repeatable automation — without the token burn. This isn't an "ask it anything and hope for the best" agent. This is structured automation with an LLM brain.
+---
 
-## The Mental Model — Graph-Based Memory
+## How it works
 
-AI assistants use different strategies for memory — chat logs, vector search, summaries. PAAW uses a **knowledge graph** (Apache AGE on PostgreSQL) that structures everything it learns about you into entities, relationships, and facts.
+As AI gets more powerful, the real problem isn't intelligence — it's continuity.
+
+Instead of storing conversations as text, PAAW stores how things are **connected**. It uses a knowledge graph (Apache AGE on PostgreSQL) that structures everything it learns about you into entities, relationships, and facts.
 
 ```
 [You]
@@ -47,24 +52,21 @@ AI assistants use different strategies for memory — chat logs, vector search, 
   |
   +-- married_to -------> [Sarah]
                                |-- birthday ---> [April 15]
-
-Key Facts:
-  Prefers morning briefings at 8 AM / Wife's birthday is April 15
-  Tracks Berkshire Hathaway stock / Likes concise, bullet-point summaries
 ```
 
 Every conversation enriches the graph. PAAW extracts entities, relationships, and key facts automatically — building a persistent model of your world that grows richer over time.
 
-**What this means in practice:**
+## Why not just use an autonomous agent?
 
-- **Total recall.** Every conversation from any day is retrievable. PAAW can pull up what you discussed three weeks ago about a project, a person, or a decision — without you having to remember when you said it.
-- **Intelligent context retrieval.** When you mention a person, project, or goal, PAAW retrieves everything it knows — related entities, history, key facts — and weaves it into the conversation. You're never starting from scratch.
-- **Cross-channel continuity.** Whether you chat via Web UI, CLI, or Discord from your phone — PAAW picks up exactly where you left off. Same context, same memory, regardless of channel.
-- **Compounding knowledge.** The more you use PAAW, the more it understands. Connections between entities surface naturally. A mention of your colleague pulls in their role, shared projects, and last interaction.
+LLMs are probabilistic systems. When you give an autonomous agent a vague goal and let it figure things out, you get unpredictable behavior and runaway token costs.
 
-| Dark Mode | Light Mode |
-|-----------|------------|
-| ![Mental Model Dark](docs/images/mental-model-dark.png) | ![Mental Model Light](docs/images/mental-model-light.png) |
+PAAW takes a different approach: **you define the patterns, PAAW executes them.**
+
+- **Skills** describe *how* to do something (in plain English)
+- **Jobs** describe *what* to do, *when* to run, and *where* to notify
+- **Tools** are the capabilities PAAW can use (web search, Discord, any MCP server)
+
+Predictable, repeatable automation — without the token burn. This isn't "ask it anything and hope for the best." This is structured automation with an LLM brain.
 
 ## Features
 
