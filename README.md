@@ -1,6 +1,6 @@
 # PAAW
 
-**Personal AI Assistant that Works** — A structured, user-driven AI assistant with graph-based memory.
+**An AI agent that builds a mental model of your life.**
 
 ```
  ██████╗  █████╗  █████╗ ██╗    ██╗
@@ -10,6 +10,12 @@
  ██║     ██║  ██║██║  ██║╚███╔███╔╝
  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ 
 ```
+
+Not just chat. Not just memory. PAAW connects people, work, and context — so it actually understands what you mean over time.
+
+- **Remembers conversations from weeks ago** — total recall across every interaction
+- **Connects context across projects, people, and tasks** — mention a name and everything related surfaces
+- **Executes tasks predictably** — no random agent behavior, no runaway token costs
 
 **Website**: [paaw.online](https://paaw.online)
 
