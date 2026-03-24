@@ -83,6 +83,8 @@ Predictable, repeatable automation — without the token burn. This isn't "ask i
 - Docker & Docker Compose
 - An LLM API key (Anthropic, OpenAI, or Groq)
 
+> **Note:** PAAW relies heavily on tool calling. Use a model that supports it well — smaller models without strong tool-use capabilities will not work reliably. I recommend **Claude Sonnet 4** (`claude-sonnet-4-6`) — this entire app was built and tested on it, and I've spent about $10 over 2 weeks of active development and daily use.
+
 ### Setup
 
 ```bash
