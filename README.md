@@ -1,6 +1,6 @@
 # PAAW
 
-**Personal AI** — An AI that builds a mental model of YOU.
+**Personal AI Assistant** — An AI that builds a mental model of YOU.
 
 ```
  ██████╗  █████╗  █████╗ ██╗    ██╗
