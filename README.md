@@ -1,6 +1,6 @@
 # PAAW
 
-**Personal AI Assistant that Works** — An AI that builds a mental model of YOU.
+**Personal AI** — An AI that builds a mental model of YOU.
 
 ```
  ██████╗  █████╗  █████╗ ██╗    ██╗
@@ -36,6 +36,10 @@ Key Facts:
 ```
 
 **Every conversation enriches your mental model.** PAAW extracts entities, relationships, and facts — building context that persists forever.
+
+| Dark Mode | Light Mode |
+|-----------|------------|
+| ![Mental Model Dark](docs/images/mental-model-dark.png) | ![Mental Model Light](docs/images/mental-model-light.png) |
 
 ## Features
 

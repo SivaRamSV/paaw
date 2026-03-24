@@ -443,23 +443,15 @@
                     </div>
                 </div>
 
-                <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 800px; margin: 0 auto;">
-                    <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.875rem;">Example: After a few conversations, PAAW knows...</p>
-                    <pre style="font-family: monospace; font-size: 0.8rem; color: var(--accent); line-height: 1.6; overflow-x: auto;">
-  [You]
-    |-- works_at ---------> [Acme Corp]
-    |                            |-- located_in --> [San Francisco]
-    |
-    |-- interested_in ----> [AI/ML]
-    |
-    |-- manages ----------> [Project Alpha]
-    |                            |-- deadline ----> [March 30]
-    |
-    +-- married_to -------> [Sarah]
-                                 |-- birthday ---> [April 15]
-
-  Key Facts:
-    Prefers bullet points / Morning person / Tracks BRK.B / Learning Spanish</pre>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto;">
+                    <div style="border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+                        <img src="images/mental-model-dark.png" alt="PAAW Mental Model - Dark Mode" style="width: 100%; display: block;">
+                        <p style="color: var(--text-muted); font-size: 0.8rem; padding: 12px; text-align: center;">Knowledge graph visualization — dark mode</p>
+                    </div>
+                    <div style="border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+                        <img src="images/mental-model-light.png" alt="PAAW Mental Model - Light Mode" style="width: 100%; display: block;">
+                        <p style="color: var(--text-muted); font-size: 0.8rem; padding: 12px; text-align: center;">Knowledge graph visualization — light mode</p>
+                    </div>
                 </div>
             </div>
         </section>
