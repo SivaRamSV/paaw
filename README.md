@@ -9,7 +9,6 @@
  ██╔═══╝ ██╔══██║██╔══██║██║███╗██║
  ██║     ██║  ██║██║  ██║╚███╔███╔╝
  ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ 
- Personal AI Assistant that Works
 ```
 
 🌐 **Website**: [paaw.online](https://paaw.online)
