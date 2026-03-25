@@ -35,14 +35,16 @@ services:
 
   # =============================================================================
   # PostgreSQL with Apache AGE (Graph Database)
+  # Default credentials are for local development only.
+  # For production, override via .env or environment variables.
   # =============================================================================
   postgres:
     image: apache/age:latest
     container_name: paaw-postgres
     environment:
-      POSTGRES_USER: paaw
-      POSTGRES_PASSWORD: paaw
-      POSTGRES_DB: paaw
+      POSTGRES_USER: ${POSTGRES_USER:-paaw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-paaw}
+      POSTGRES_DB: ${POSTGRES_DB:-paaw}
     volumes:
       # PG18+ uses /var/lib/postgresql with subdirs, not /var/lib/postgresql/data
       - paaw-data:/var/lib/postgresql
